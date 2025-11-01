@@ -4,9 +4,18 @@ export type RoleName = 'GESTOR' | 'COLABORADOR';
 
 const MANAGER_ROLE: RoleName = 'GESTOR';
 
+const MANAGER_KEYWORDS = ['GESTOR', 'MANAGER'];
+
 export const normalizeRoleName = (value?: string | null): RoleName => {
-  const normalized = value?.toString().trim().toUpperCase();
-  return normalized === MANAGER_ROLE ? MANAGER_ROLE : 'COLABORADOR';
+  const normalized = value?.toString().trim().replace(/\s+/g, ' ').toUpperCase();
+   if (!normalized) {
+    return 'COLABORADOR';
+  }
+
+  const isManager =
+    normalized === MANAGER_ROLE || MANAGER_KEYWORDS.some((keyword) => normalized.includes(keyword));
+
+  return isManager ? MANAGER_ROLE : 'COLABORADOR';
 };
 
 export const isManagerRole = (value?: string | null): boolean => {
