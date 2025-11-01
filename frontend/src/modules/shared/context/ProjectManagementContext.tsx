@@ -325,7 +325,7 @@ const mapApiProjectToProject = (apiProject: ApiProject): Project => {
 
     const collaborator = mapEmployeeToCollaborator(employee);
     collaboratorCache.set(collaborator.id, collaborator);
-      if (collaborator.role === 'Colaborador') {
+     if (collaborator.role === 'Colaborador') {
       teamIds.add(collaborator.id);
     }
   });

@@ -5,7 +5,7 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, FindOptionsRelations } from 'typeorm';
 import { Project } from '../../database/entities/project.entity';
 import { Priority } from '../../database/entities/priority.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -103,38 +103,48 @@ export class ProjectsService {
   }
 
   async findAllForUser(user: AuthenticatedUser): Promise<Project[]> {
-    if (user.roleName === 'GESTOR') {
+    const relations: FindOptionsRelations<Project> = {
+      priority: true,
+      taskAssignments: {
+        task: {
+          priority: true,
+          state: true,
+          documents: true,
+          evolutions: true
+        },
+        employee: true
+      },
+      collaborators: { employee: true },
+      resources: {
+        resource: true,
+        task: {
+          priority: true,
+          state: true,
+          documents: true,
+          evolutions: true
+        }
+      }
+    };
+    if (user.roleName === 'GESTOR' || user.roleName === 'COLABORADOR' ) {
       return this.projectsRepository.find({
-        relations: [
-          'priority',
-          'taskAssignments',
-          'taskAssignments.task',
-          'taskAssignments.task.priority',
-          'taskAssignments.task.state',
-          'collaborators',
-          'collaborators.employee'
-        ],
+        relations,
         order: { startDate: 'DESC' }
       });
     }
 
-    return this.projectsRepository
-      .createQueryBuilder('project')
-      .leftJoinAndSelect('project.priority', 'priority')
-      .leftJoinAndSelect(
-        'project.taskAssignments',
-        'taskAssignments',
-        'taskAssignments.id_empleado = :employeeId',
-        { employeeId: user.id }
-      )
-      .leftJoinAndSelect('taskAssignments.task', 'task')
-      .leftJoinAndSelect('task.priority', 'taskPriority')
-      .leftJoinAndSelect('project.collaborators', 'projectCollaborators')
-      .innerJoin('project.collaborators', 'assignment', 'assignment.id_empleado = :employeeId', {
-        employeeId: user.id
-      })
-      .orderBy('project.startDate', 'DESC')
-      .getMany();
+    const projects = await this.projectsRepository.find({
+      where: { collaborators: { employee: { id: user.id } } },
+      relations,
+      order: { startDate: 'DESC' }
+    });
+
+    projects.forEach((project) => {
+      project.taskAssignments = (project.taskAssignments ?? []).filter(
+        (assignment) => assignment.employee?.id === user.id
+      );
+    });
+
+    return projects;
   }
 
   async findProjectDetail(projectId: string, user: AuthenticatedUser): Promise<Project> {
