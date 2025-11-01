@@ -7,7 +7,7 @@ const PRIORITY_DESCRIPTION_TO_LEVEL: Record<string, PriorityLevel> = {
 };
 
 const TASK_STATUS_DESCRIPTION_TO_STATUS: Record<string, TaskStatus> = {
-  CREADA: TaskStatus.Pending,
+  CREADA: TaskStatus.Created,
   PENDIENTE: TaskStatus.Pending,
   'EN CURSO': TaskStatus.InProgress,
   'EN REVISION': TaskStatus.InReview,
@@ -16,6 +16,7 @@ const TASK_STATUS_DESCRIPTION_TO_STATUS: Record<string, TaskStatus> = {
 };
 
 const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
+  [TaskStatus.Created]: 'Creada',
   [TaskStatus.Pending]: 'Pendiente',
   [TaskStatus.InProgress]: 'En curso',
   [TaskStatus.InReview]: 'En revisión',
@@ -44,7 +45,7 @@ export const mapPriorityDescription = (description: unknown): PriorityLevel => {
 
 export const mapTaskStatusDescription = (description: unknown): TaskStatus => {
   const normalized = normalizeDescription(description);
-  return normalized ? TASK_STATUS_DESCRIPTION_TO_STATUS[normalized] ?? TaskStatus.Pending : TaskStatus.Pending;
+  return normalized ? TASK_STATUS_DESCRIPTION_TO_STATUS[normalized] ?? TaskStatus.Created : TaskStatus.Created;
 };
 
 export const getTaskStatusLabel = (status: TaskStatus): string => TASK_STATUS_LABELS[status];

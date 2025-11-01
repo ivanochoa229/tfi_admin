@@ -12,6 +12,7 @@ export enum PriorityLevel {
 }
 
 export enum TaskStatus {
+  Created = 'CREATED',
   Pending = 'PENDING',
   InProgress = 'IN_PROGRESS',
   InReview = 'IN_REVIEW',
@@ -83,6 +84,7 @@ export interface Project {
   startDate: string;
   endDate: string;
   managerId: string;
+  manager?: Collaborator | null;
   teamIds: string[];
   teamMembers?: Collaborator[];
   budget: number;

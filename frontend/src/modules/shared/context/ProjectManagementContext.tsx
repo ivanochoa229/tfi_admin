@@ -178,6 +178,7 @@ const createEmptyPriorityMap = (): Record<PriorityLevel, string> => ({
 });
 
 const createEmptyTaskStateMap = (): Record<TaskStatus, string> => ({
+  [TaskStatus.Created]: '',
   [TaskStatus.Pending]: '',
   [TaskStatus.InProgress]: '',
   [TaskStatus.InReview]: '',
@@ -201,6 +202,9 @@ const mergeCollaborators = (projects: Project[], additional: Collaborator[]): Co
   const registry = new Map<string, Collaborator>();
 
   projects.forEach((project) => {
+    if (project.manager) {
+      registry.set(project.manager.id, project.manager);
+    }
     project.teamMembers?.forEach((member) => {
       registry.set(member.id, member);
     });
@@ -315,12 +319,23 @@ const mapApiProjectToProject = (apiProject: ApiProject): Project => {
   projectAssignments.forEach((assignment) => {
     const collaborator = mapEmployeeToCollaborator(assignment.employee);
     collaboratorCache.set(collaborator.id, collaborator);
-    teamIds.add(collaborator.id);
+     if (collaborator.role === 'Colaborador') {
+      teamIds.add(collaborator.id);
+    }
   });
-  tasks.forEach((task) => task.assigneeIds.forEach((id) => teamIds.add(id)));
+   tasks.forEach((task) =>
+    task.assigneeIds.forEach((id) => {
+      const collaborator = collaboratorCache.get(id);
+      if (collaborator?.role === 'Colaborador') {
+        teamIds.add(id);
+      }
+    })
+  );
 
   const manager = Array.from(collaboratorCache.values()).find((item) => item.role === 'Gestor de proyecto');
-
+  const teamMembers = Array.from(collaboratorCache.values()).filter(
+      (member) => member.role === 'Colaborador'
+    );
   return {
     id: apiProject.id,
     name: apiProject.name,
@@ -335,8 +350,9 @@ const mapApiProjectToProject = (apiProject: ApiProject): Project => {
     startDate: apiProject.startDate,
     endDate: apiProject.endDate ?? apiProject.estimatedDate,
     managerId: manager?.id ?? '',
+    manager: manager ?? null,
     teamIds: Array.from(teamIds),
-    teamMembers: Array.from(collaboratorCache.values()),
+    teamMembers,
     budget: Number(apiProject.budget),
     usedBudget: tasks.reduce(
       (acc, task) => acc + task.resources.reduce((resourceAcc, resource) => resourceAcc + resource.cost, 0),
@@ -369,6 +385,7 @@ const createTaskStateMap = (states: ApiTaskState[]): Record<TaskStatus, string> 
     map[status] = state.id;
   });
   return {
+    [TaskStatus.Created]: map[TaskStatus.Created] ?? '',
     [TaskStatus.Pending]: map[TaskStatus.Pending] ?? '',
     [TaskStatus.InProgress]: map[TaskStatus.InProgress] ?? '',
     [TaskStatus.InReview]: map[TaskStatus.InReview] ?? '',
@@ -613,6 +630,15 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
       await apiClient.delete(
         `/projects/${projectId}/tasks/${taskId}`,
         withAuthorization(token)
+      );
+      setProjects((prev) =>
+        prev.map((project) => {
+          if (project.id !== projectId) {
+            return project;
+          }
+          const remainingTasks = project.tasks.filter((task) => task.id !== taskId);
+          return { ...project, tasks: remainingTasks };
+        })
       );
       await loadProject(projectId);
     },

@@ -129,6 +129,7 @@ const ReportsPage = () => {
   const taskStatusByProject = useMemo(() => {
     return projects.map((project) => {
       const counts: Record<TaskStatus, number> = {
+        [TaskStatus.Created]: 0,
         [TaskStatus.Pending]: 0,
         [TaskStatus.InProgress]: 0,
         [TaskStatus.InReview]: 0,

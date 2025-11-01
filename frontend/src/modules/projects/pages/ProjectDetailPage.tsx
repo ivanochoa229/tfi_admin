@@ -24,6 +24,7 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 };
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
+  [TaskStatus.Created]: 'Creada',
   [TaskStatus.Pending]: 'Pendiente',
   [TaskStatus.InProgress]: 'En curso',
   [TaskStatus.InReview]: 'En revisión',
@@ -60,6 +61,10 @@ const ProjectDetailPage = () => {
 
   const project = useMemo(() => projects.find((item) => item.id === projectId), [projects, projectId]);
   const isManager = user?.role === 'Gestor de proyecto';
+  const collaboratorOptions = useMemo(
+    () => collaborators.filter((collaborator) => collaborator.role === 'Colaborador'),
+    [collaborators]
+  );
   const visibleTasks = useMemo(() => (project ? getTasksVisibleToUser(project, user) : []), [project, user]);
   const canViewProject = useMemo(() => (project ? canUserAccessProject(project, user) : false), [project, user]);
 
@@ -623,7 +628,7 @@ const ProjectDetailPage = () => {
                       <div>
                         <h5>Actualizar colaboradores</h5>
                         <div className="task-card__options">
-                          {collaborators.map((collaborator) => (
+                          {collaboratorOptions.map((collaborator) => (
                             <label key={collaborator.id}>
                               <input
                                 type="checkbox"
@@ -648,7 +653,7 @@ const ProjectDetailPage = () => {
                           onChange={(event) => handleStatusDraftChange(task, 'status', event.target.value)}
                         >
                           {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                            <option key={value} value={value}>
+                            <option key={value} value={value} disabled={value === TaskStatus.Created}>
                               {label}
                             </option>
                           ))}
