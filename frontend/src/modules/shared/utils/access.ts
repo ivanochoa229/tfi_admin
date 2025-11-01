@@ -6,7 +6,7 @@ export const canUserAccessProject = (project: Project, user: User | null): boole
     return false;
   }
 
-  if (user.role === 'Gestor de proyecto') {
+  if (user.roleName === 'GESTOR') {
     return true;
   }
 
@@ -21,7 +21,7 @@ export const getProjectsVisibleToUser = (projects: Project[], user: User | null)
     return [];
   }
 
-  if (user.role === 'Gestor de proyecto') {
+  if (user.roleName === 'GESTOR') {
     return projects;
   }
 
@@ -33,7 +33,7 @@ export const getTasksVisibleToUser = (project: Project, user: User | null): Task
     return [];
   }
 
-  if (user.role === 'Gestor de proyecto') {
+  if (user.roleName === 'GESTOR') {
     return project.tasks;
   }
 

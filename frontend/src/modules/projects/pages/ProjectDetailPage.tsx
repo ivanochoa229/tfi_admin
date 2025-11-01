@@ -61,7 +61,7 @@ const ProjectDetailPage = () => {
   const { user } = useAuth();
 
   const project = useMemo(() => projects.find((item) => item.id === projectId), [projects, projectId]);
-  const isManager = user?.role === 'Gestor de proyecto';
+  const isManager = user?.roleName === 'GESTOR';
   const collaboratorOptions = useMemo(() => availableCollaborators, [availableCollaborators]);
   const visibleTasks = useMemo(() => (project ? getTasksVisibleToUser(project, user) : []), [project, user]);
   const canViewProject = useMemo(() => (project ? canUserAccessProject(project, user) : false), [project, user]);

@@ -5,7 +5,7 @@ import './AppLayout.css';
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
-  const isManager = user?.role === 'Gestor de proyecto';
+  const isManager = user?.roleName === 'GESTOR';
   const displayName = user ? `${user.firstName} ${user.lastName}` : '';
 
   return (

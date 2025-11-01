@@ -18,7 +18,7 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 const ProjectsPage = () => {
   const { projects, collaborators, isLoading, error } = useProjectManagement();
   const { user } = useAuth();
-  const isManager = user?.role === 'Gestor de proyecto';
+  const isManager = user?.roleName === 'GESTOR';
   const headerTitle = isManager ? 'Proyectos' : 'Mis proyectos';
   const headerDescription = isManager
     ? 'Consulta el estado y los responsables de cada iniciativa.'
