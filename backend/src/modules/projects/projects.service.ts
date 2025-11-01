@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Project } from '../../database/entities/project.entity';
@@ -114,12 +119,19 @@ export class ProjectsService {
     return this.projectsRepository
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.priority', 'priority')
-      .leftJoinAndSelect('project.taskAssignments', 'taskAssignments')
+      .leftJoinAndSelect(
+        'project.taskAssignments',
+        'taskAssignments',
+        'taskAssignments.id_empleado = :employeeId',
+        { employeeId: user.id }
+      )
       .leftJoinAndSelect('taskAssignments.task', 'task')
       .leftJoinAndSelect('task.priority', 'taskPriority')
       .leftJoinAndSelect('task.state', 'taskState')
-      .leftJoin('project.collaborators', 'assignment')
-      .where('assignment.id_empleado = :employeeId', { employeeId: user.id })
+      .innerJoin('project.collaborators', 'assignment', 'assignment.id_empleado = :employeeId', {
+        employeeId: user.id
+      })
+      .orderBy('project.startDate', 'DESC')
       .getMany();
   }
 
@@ -266,6 +278,11 @@ export class ProjectsService {
       throw new NotFoundException('Uno o más colaboradores no existen');
     }
 
+    const invalidRoles = collaborators.filter((collaborator) => collaborator.role?.name !== 'COLABORADOR');
+    if (invalidRoles.length > 0) {
+      throw new BadRequestException('Solo se pueden asignar empleados con rol de colaborador');
+    }
+
     const existingAssignments = await this.taskProjectRepository.find({
       where: {
         project: { id: projectId },
@@ -292,6 +309,31 @@ export class ProjectsService {
     if (newAssignments.length > 0) {
       await this.taskProjectRepository.save(newAssignments);
     }
+const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments].filter(
+      (assignment) => Boolean(assignment.employee)
+    );
+
+    const currentState = normalizeStateName(task.state.description);
+    if (assignmentsWithCollaborators.length > 0 && currentState === 'CREADA') {
+      const pendingState = await this.taskStatesRepository.findOne({ where: { description: 'PENDIENTE' } });
+      if (!pendingState) {
+        throw new NotFoundException('No se encontró el estado "PENDIENTE" en el catálogo');
+      }
+
+      task.state = pendingState;
+      await this.tasksRepository.save(task);
+
+      const manager = await this.employeesRepository.findOne({ where: { id: user.id } });
+      const evolution = this.taskEvolutionRepository.create({
+        task,
+        state: pendingState,
+        employee: manager ?? null,
+        startDate: new Date().toISOString().slice(0, 10),
+        description: 'Asignación de colaboradores'
+      });
+
+      await this.taskEvolutionRepository.save(evolution);
+    }
 
     return this.getTaskAssignments(taskId);
   }
@@ -315,7 +357,17 @@ export class ProjectsService {
       throw new NotFoundException('Tarea no encontrada');
     }
 
-    await this.tasksRepository.remove(task);
+    const assignmentExists = await this.taskProjectRepository.exist({
+      where: { project: { id: projectId }, task: { id: taskId } }
+    });
+    if (!assignmentExists) {
+      throw new NotFoundException('La tarea no pertenece al proyecto indicado');
+    }
+
+    await this.taskProjectResourceRepository.delete({ task: { id: taskId } });
+    await this.taskProjectRepository.delete({ task: { id: taskId } });
+    await this.tasksRepository.delete({ id: taskId });
+
     return { success: true };
   }
 
