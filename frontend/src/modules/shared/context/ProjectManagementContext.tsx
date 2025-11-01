@@ -125,7 +125,7 @@ interface ApiTaskProjectResource {
 }
 interface ApiProjectAssignment {
   id: number;
-  employee: ApiEmployee;
+  employee: ApiEmployee | null;
 }
 interface ApiResource {
   id: string;
@@ -318,9 +318,14 @@ const mapApiProjectToProject = (apiProject: ApiProject): Project => {
   const projectAssignments = apiProject.collaborators ?? [];
   const teamIds = new Set<string>();
   projectAssignments.forEach((assignment) => {
-    const collaborator = mapEmployeeToCollaborator(assignment.employee);
+     const employee = assignment.employee;
+    if (!employee) {
+      return;
+    }
+
+    const collaborator = mapEmployeeToCollaborator(employee);
     collaboratorCache.set(collaborator.id, collaborator);
-     if (collaborator.role === 'Colaborador') {
+      if (collaborator.role === 'Colaborador') {
       teamIds.add(collaborator.id);
     }
   });

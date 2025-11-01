@@ -54,24 +54,11 @@ const LoginPage = () => {
             />
           </div>
           {error && <p className="form-error">{error}</p>}
+          <hr/>
           <button type="submit" className="primary" disabled={isLoading}>
             {isLoading ? 'Ingresando...' : 'Iniciar sesión'}
           </button>
         </form>
-        <footer>
-          <small>
-            Serás redirigido a: <strong>{from}</strong>
-          </small>
-          <small>Prueba con estas credenciales disponibles:</small>
-          <ul>
-            <li>
-              <strong>Gestor:</strong> maria.lopez@empresa.com / Gestor1234
-            </li>
-            <li>
-              <strong>Colaborador:</strong> carlos.perez@empresa.com / Colaborador123
-            </li>
-          </ul>
-        </footer>
       </div>
     </div>
   );
