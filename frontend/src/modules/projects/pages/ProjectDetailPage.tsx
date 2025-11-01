@@ -12,6 +12,7 @@ import {
   TaskStatus
 } from '../../shared/types/project';
 import { canUserAccessProject, getTasksVisibleToUser } from '../../shared/utils/access';
+import { isManagerRole } from '../../shared/utils/roles';
 import { formatCurrency, getCollaboratorFullName } from '../../shared/utils/format';
 import StatusBadge from '../components/StatusBadge';
 import './ProjectDetailPage.css';
@@ -61,7 +62,7 @@ const ProjectDetailPage = () => {
   const { user } = useAuth();
 
   const project = useMemo(() => projects.find((item) => item.id === projectId), [projects, projectId]);
-  const isManager = user?.roleName === 'GESTOR';
+  const isManager = isManagerRole(user?.roleName);
   const collaboratorOptions = useMemo(() => availableCollaborators, [availableCollaborators]);
   const visibleTasks = useMemo(() => (project ? getTasksVisibleToUser(project, user) : []), [project, user]);
   const canViewProject = useMemo(() => (project ? canUserAccessProject(project, user) : false), [project, user]);

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import authService from '../shared/services/authService';
 import { CollaboratorRole } from '../shared/types/project';
+import { mapRoleNameToCollaboratorRole, normalizeRoleName } from '../shared/utils/roles';
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -48,7 +49,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const savedSession = window.localStorage.getItem(AUTH_STORAGE_KEY);
     if (savedSession) {
       const parsed = JSON.parse(savedSession) as SessionState;
-      setSession(parsed);
+      const normalizedRoleName = normalizeRoleName(parsed.user.roleName);
+      const normalizedUser: User = {
+        ...parsed.user,
+        roleName: normalizedRoleName,
+        role: mapRoleNameToCollaboratorRole(normalizedRoleName)
+      };
+      setSession({ token: parsed.token, user: normalizedUser });
     }
   }, []);
 
@@ -57,13 +64,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
     try {
       const response = await authService.login(credentials);
+      const normalizedRoleName = normalizeRoleName(response.user.roleName);
       const mappedUser: User = {
         id: response.user.id,
         email: response.user.email,
         firstName: response.user.firstName,
         lastName: response.user.lastName,
-        role: response.user.roleName === 'GESTOR' ? 'Gestor de proyecto' : 'Colaborador',
-        roleName: response.user.roleName,
+        role: mapRoleNameToCollaboratorRole(normalizedRoleName),
+        roleName: normalizedRoleName,
         roleId: response.user.roleId
       };
       const nextSession: SessionState = { token: response.token, user: mappedUser };

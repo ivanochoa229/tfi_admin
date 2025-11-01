@@ -1,12 +1,13 @@
 import { User } from '../../auth/AuthContext';
 import { Project, Task } from '../types/project';
+import { isManagerRole } from './roles';
 
 export const canUserAccessProject = (project: Project, user: User | null): boolean => {
   if (!user) {
     return false;
   }
 
-  if (user.roleName === 'GESTOR') {
+  if (isManagerRole(user.roleName)) {
     return true;
   }
 
@@ -21,7 +22,7 @@ export const getProjectsVisibleToUser = (projects: Project[], user: User | null)
     return [];
   }
 
-  if (user.roleName === 'GESTOR') {
+  if (isManagerRole(user.roleName)) {
     return projects;
   }
 
@@ -33,7 +34,7 @@ export const getTasksVisibleToUser = (project: Project, user: User | null): Task
     return [];
   }
 
-  if (user.roleName === 'GESTOR') {
+  if (isManagerRole(user.roleName)) {
     return project.tasks;
   }
 

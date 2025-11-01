@@ -25,6 +25,7 @@ import {
   TaskStatus
 } from '../types/project';
 import { mapPriorityDescription, mapTaskStatusDescription } from '../utils/status';
+import { isManagerRole, mapRoleNameToCollaboratorRole, normalizeRoleName } from '../utils/roles';
 
 export interface CreateProjectPayload {
   name: string;
@@ -187,7 +188,7 @@ const createEmptyTaskStateMap = (): Record<TaskStatus, string> => ({
 });
 
 const mapEmployeeToCollaborator = (employee: ApiEmployee): Collaborator => {
-  const roleName = employee.role?.name ?? 'COLABORADOR';
+  const roleName = normalizeRoleName(employee.role?.name);
 
   return {
     id: employee.id,
@@ -195,7 +196,7 @@ const mapEmployeeToCollaborator = (employee: ApiEmployee): Collaborator => {
     lastName: employee.lastName,
     email: employee.email ?? '',
     phone: employee.phone ?? '',
-    role: roleName === 'GESTOR' ? 'Gestor de proyecto' : 'Colaborador'
+    role: mapRoleNameToCollaboratorRole(roleName)
   };
 };
 
@@ -509,7 +510,7 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
         encounteredErrors.push('No se pudieron cargar los proyectos.');
       }
 
-      if (user?.roleName === 'GESTOR') {
+      if (isManagerRole(user?.roleName)) {
         try {
           const { data: collaboratorsResponse } = await apiClient.get<ApiEmployee[]>(
             `/employees/collaborators`,

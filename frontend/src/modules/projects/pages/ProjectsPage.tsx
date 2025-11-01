@@ -6,6 +6,7 @@ import { useProjectManagement } from '../../shared/context/ProjectManagementCont
 import { PriorityLevel } from '../../shared/types/project';
 import { getProjectsVisibleToUser } from '../../shared/utils/access';
 import { formatCurrency, getCollaboratorFullName } from '../../shared/utils/format';
+import { isManagerRole } from '../../shared/utils/roles';
 import StatusBadge from '../components/StatusBadge';
 import './ProjectsPage.css';
 
@@ -18,7 +19,7 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 const ProjectsPage = () => {
   const { projects, collaborators, isLoading, error } = useProjectManagement();
   const { user } = useAuth();
-  const isManager = user?.roleName === 'GESTOR';
+  const isManager = isManagerRole(user?.roleName);
   const headerTitle = isManager ? 'Proyectos' : 'Mis proyectos';
   const headerDescription = isManager
     ? 'Consulta el estado y los responsables de cada iniciativa.'

@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom';
 
 import { useAuth } from '../../auth/AuthContext';
+import { isManagerRole } from '../utils/roles';
 import './AppLayout.css';
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
-  const isManager = user?.roleName === 'GESTOR';
+  const isManager = isManagerRole(user?.roleName);
   const displayName = user ? `${user.firstName} ${user.lastName}` : '';
 
   return (
