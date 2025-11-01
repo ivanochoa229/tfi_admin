@@ -45,6 +45,7 @@ const ProjectDetailPage = () => {
   const {
     projects,
     collaborators,
+    availableCollaborators,
     resources,
     createTask,
     deleteTask,
@@ -61,10 +62,7 @@ const ProjectDetailPage = () => {
 
   const project = useMemo(() => projects.find((item) => item.id === projectId), [projects, projectId]);
   const isManager = user?.role === 'Gestor de proyecto';
-  const collaboratorOptions = useMemo(
-    () => collaborators.filter((collaborator) => collaborator.role === 'Colaborador'),
-    [collaborators]
-  );
+  const collaboratorOptions = useMemo(() => availableCollaborators, [availableCollaborators]);
   const visibleTasks = useMemo(() => (project ? getTasksVisibleToUser(project, user) : []), [project, user]);
   const canViewProject = useMemo(() => (project ? canUserAccessProject(project, user) : false), [project, user]);
 

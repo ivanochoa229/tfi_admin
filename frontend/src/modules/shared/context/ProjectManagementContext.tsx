@@ -55,6 +55,7 @@ export interface RegisterCollaboratorPayload {
 interface ProjectManagementContextValue {
   projects: Project[];
   collaborators: Collaborator[];
+  availableCollaborators: Collaborator[];
   resources: Resource[];
   isLoading: boolean;
   error: string | null;
@@ -407,6 +408,11 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
     () => mergeCollaborators(projects, externalCollaborators),
     [projects, externalCollaborators]
   );
+
+  const availableCollaborators = useMemo(
+      () => collaborators.filter((collaborator) => collaborator.role === 'Colaborador'),
+      [collaborators]
+    );
 
   const resources = useMemo(() => resourceCatalog, [resourceCatalog]);
 
@@ -840,6 +846,7 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
     () => ({
       projects,
       collaborators,
+      availableCollaborators,
       resources,
       isLoading,
       error,
@@ -859,6 +866,7 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
     [
       projects,
       collaborators,
+      availableCollaborators,
       resources,
       isLoading,
       error,

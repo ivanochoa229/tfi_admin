@@ -12,15 +12,15 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 };
 
 const TeamsPage = () => {
-  const { projects, collaborators, isLoading, error } = useProjectManagement();
+  const { projects, collaborators, availableCollaborators, isLoading, error } = useProjectManagement();
 
   const collaboratorsByRole = useMemo<Record<string, Collaborator[]>>(() => {
-    return collaborators.reduce((acc, collaborator) => {
+    return availableCollaborators.reduce((acc, collaborator) => {
       const key = collaborator.role;
       acc[key] = [...(acc[key] ?? []), collaborator];
       return acc;
     }, {} as Record<string, Collaborator[]>);
-  }, [collaborators]);
+  }, [availableCollaborators]);
 
   if (isLoading && projects.length === 0 && collaborators.length === 0) {
     return (

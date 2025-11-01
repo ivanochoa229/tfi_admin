@@ -110,7 +110,9 @@ export class ProjectsService {
           'taskAssignments',
           'taskAssignments.task',
           'taskAssignments.task.priority',
-          'taskAssignments.task.state'
+          'taskAssignments.task.state',
+          'collaborators',
+          'collaborators.employee'
         ],
         order: { startDate: 'DESC' }
       });
@@ -127,7 +129,7 @@ export class ProjectsService {
       )
       .leftJoinAndSelect('taskAssignments.task', 'task')
       .leftJoinAndSelect('task.priority', 'taskPriority')
-      .leftJoinAndSelect('task.state', 'taskState')
+      .leftJoinAndSelect('project.collaborators', 'projectCollaborators')
       .innerJoin('project.collaborators', 'assignment', 'assignment.id_empleado = :employeeId', {
         employeeId: user.id
       })
@@ -145,6 +147,8 @@ export class ProjectsService {
         'taskAssignments.task.priority',
         'taskAssignments.task.state',
         'taskAssignments.employee',
+        'collaborators',
+        'collaborators.employee',
         'resources',
         'resources.resource'
       ]
