@@ -1,0 +1,166 @@
+.reports {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reports__alert {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.reports__header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.reports__header p {
+  margin: 0.25rem 0 0;
+  color: #5f6368;
+}
+
+.reports__section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reports__section table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reports__section th,
+.reports__section td {
+  text-align: left;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.reports__section tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.reports__section ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.reports__section ul li small {
+  display: block;
+  color: #64748b;
+}
+
+.reports__empty {
+  margin: 0;
+  color: #4b5563;
+  font-style: italic;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status--in_progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status--in_review {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.status--completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.reports__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.reports__card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reports__card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reports__card header h4 {
+  margin: 0;
+}
+
+.reports__progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reports__progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.reports__progress-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.reports__progress-fill.status--pending {
+  background: #f59e0b;
+}
+
+.reports__progress-fill.status--in_progress {
+  background: #3b82f6;
+}
+
+.reports__progress-fill.status--in_review {
+  background: #8b5cf6;
+}
+
+.reports__progress-fill.status--completed {
+  background: #22c55e;
+}
+
+@media (max-width: 640px) {
+  .reports__section table {
+    display: block;
+    overflow-x: auto;
+  }
+}

@@ -1,0 +1,116 @@
+.teams-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.teams-page__alert {
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.teams-page header h2 {
+  margin: 0;
+  color: #0f2a47;
+}
+
+.teams-page header p {
+  margin: 0.5rem 0 0;
+  color: #5d6b82;
+  max-width: 640px;
+}
+
+.teams-page__section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.teams-page__section h3 {
+  margin: 0;
+  color: #0f2a47;
+}
+
+.teams-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.teams-card {
+  background: #f8fafc;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.teams-card h4 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.teams-card__count {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.teams-card__focus {
+  margin: 0;
+  color: #475569;
+  font-style: italic;
+}
+
+.teams-card__lead span {
+  display: block;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.teams-card__lead strong {
+  color: #1d4ed8;
+  font-size: 1.05rem;
+}
+
+.teams-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.teams-card li {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border: 1px solid #e2e8f0;
+}
+
+.teams-card li strong {
+  color: #0f172a;
+}
+
+.teams-card li span {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .teams-page__section {
+    padding: 1.25rem;
+  }
+}

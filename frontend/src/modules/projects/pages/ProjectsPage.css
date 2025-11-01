@@ -1,0 +1,147 @@
+.projects-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.projects-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.projects-page__header h2 {
+  margin: 0;
+  color: #0f2a47;
+}
+
+.projects-page__header p {
+  margin: 0.25rem 0 0;
+  color: #5d6b82;
+}
+
+.projects-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.projects-page__actions input {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  min-width: 260px;
+}
+
+.projects-page__actions .button {
+  background: #2563eb;
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.projects-page__actions .button:hover {
+  background: #1d4ed8;
+}
+
+.projects-table__wrapper {
+  overflow-x: auto;
+}
+
+.projects-page__alert {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.projects-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.75rem;
+}
+
+.projects-table thead th {
+  text-align: left;
+  color: #5d6b82;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+}
+
+.projects-table tbody tr {
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 66, 150, 0.08);
+  border-radius: 1rem;
+}
+
+.projects-table tbody tr td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-top: 1px solid transparent;
+}
+
+.projects-table tbody tr td:first-child {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+
+.projects-table tbody tr td:last-child {
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+.projects-table tbody tr strong {
+  display: block;
+  color: #0f2a47;
+}
+
+.projects-table tbody tr p {
+  margin: 0.25rem 0 0;
+  color: #5d6b82;
+  font-size: 0.9rem;
+}
+
+.projects-table__progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.projects-table__progress .progress-bar {
+  width: 140px;
+  height: 8px;
+  background: #eef2fb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.projects-table__progress span {
+  min-width: 38px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.projects-table td span {
+  display: block;
+  color: #5d6b82;
+  font-size: 0.85rem;
+}
+
+.projects-table__budget {
+  margin-top: 0.15rem;
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .projects-page__actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

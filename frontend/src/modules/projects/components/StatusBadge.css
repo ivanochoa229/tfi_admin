@@ -1,0 +1,36 @@
+.status-badge {
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+}
+
+.status-badge--planificado {
+  background: #fef6e6;
+  color: #b25f00;
+  border-color: #f8d9a0;
+}
+
+.status-badge--en-progreso {
+  background: #e8f3ff;
+  color: #0f62fe;
+  border-color: #bdd7ff;
+}
+
+.status-badge--completado {
+  background: #e5f8f0;
+  color: #007f4f;
+  border-color: #b7e9d3;
+}
+
+.status-badge--en-pausa {
+  background: #f9e8ff;
+  color: #8a3ffc;
+  border-color: #dfb9ff;
+}

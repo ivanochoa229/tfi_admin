@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Servicio de PostgreSQL
+  postgres:
+    image: postgres:latest
+    container_name: tfi_postgres_db
+    restart: always
+    environment:
+      # Variables basadas en tu databaseConfig:
+      POSTGRES_USER: ${DB_USER:-test}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test}
+      POSTGRES_DB: ${DB_NAME:-db_tfi}
+      # Nota: el esquema no se configura directamente aquí, se maneja en tu aplicación.
+    ports:
+      # Mapeo del puerto de la DB: Host_Port:Container_Port
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      # Volumen para persistir los datos de la base de datos
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - tfi_network
+
+  # Servicio de pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: tfi_pgadmin
+    restart: always
+    environment: 
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@email.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+
+    
+    
+    ports:
+      # Mapeo del puerto de pgAdmin: Host_Port:Container_Port
+      - "5050:80" # Puedes cambiar 5050 al puerto que desees
+    volumes:
+      # Volumen para persistir las configuraciones de pgAdmin
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres # Asegura que PostgreSQL se inicie primero
+    networks:
+      - tfi_network
+
+# Definición de los volúmenes
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+# Definición de la red
+networks:
+  tfi_network:
+    driver: bridge
