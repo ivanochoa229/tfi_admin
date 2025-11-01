@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS empleado (
   apellido_empleado VARCHAR(80),
   usuario VARCHAR(50),
   password VARCHAR(250),
+  correo_electronico VARCHAR(100),
+  telefono VARCHAR(30),
   id_rol INTEGER NOT NULL,
   CONSTRAINT fk_empleado_rol
     FOREIGN KEY (id_rol) REFERENCES rol (id_rol)
@@ -261,11 +263,11 @@ WITH
 
     -- Insertar Empleados
     empleados_ins AS (
-        INSERT INTO empleado (id_empleado, nombre_empleado, apellido_empleado, usuario, password, id_rol) VALUES
-        (gen_random_uuid(), 'Ana', 'García', 'gana123', 'password10',(SELECT id_rol FROM rol WHERE nombre_rol = 'GESTOR')),         -- Gestor
-        (gen_random_uuid(), 'Luis', 'Martínez', 'mluis123', 'password10',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')), -- Colaborador
-        (gen_random_uuid(), 'Sofía', 'Rodríguez', 'rsofia123', 'password10',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')), -- Colaborador
-        (gen_random_uuid(), 'David', 'Sánchez', 'sdavid123', 'password10',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR'))   -- Colaborador
+        INSERT INTO empleado (id_empleado, nombre_empleado, apellido_empleado, usuario, password, correo_electronico , telefono ,id_rol) VALUES
+        (gen_random_uuid(), 'Ana', 'García', 'gana123', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'anagarcia@mail.com', '3813245789',(SELECT id_rol FROM rol WHERE nombre_rol = 'GESTOR')),         -- Gestor
+        (gen_random_uuid(), 'Luis', 'Martínez', 'mluis123', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'luismartinez@mail.com', '3817845789',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')), -- Colaborador
+        (gen_random_uuid(), 'Sofía', 'Rodríguez', 'rsofia123', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'sofiarodriguez@mail.com', '3813245320',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')), -- Colaborador
+        (gen_random_uuid(), 'David', 'Sánchez', 'sdavid123', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'davidsanchez@mail.com', '3815005789',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR'))   -- Colaborador
         RETURNING id_empleado, nombre_empleado, id_rol
     ),
     empleados_cte AS (SELECT id_empleado, nombre_empleado, id_rol FROM empleados_ins),
