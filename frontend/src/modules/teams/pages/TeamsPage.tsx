@@ -68,10 +68,6 @@ const TeamsPage = () => {
             <article key={project.id} className="teams-card">
               <h4>{project.name}</h4>
               <p className="teams-card__focus">Prioridad {PRIORITY_LABELS[project.priority]}</p>
-              <div className="teams-card__lead">
-                <span>Gestor</span>
-                <strong>{getCollaboratorFullName(collaborators, project.managerId)}</strong>
-              </div>
               <div>
                 <span>Integrantes</span>
                 <ul>
