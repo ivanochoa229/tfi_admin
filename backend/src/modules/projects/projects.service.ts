@@ -5,7 +5,7 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, FindOptionsRelations } from 'typeorm';
+import { Repository, In, FindOptionsRelations, FindOptionsWhere } from 'typeorm';
 import { Project } from '../../database/entities/project.entity';
 import { Priority } from '../../database/entities/priority.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -125,15 +125,32 @@ export class ProjectsService {
         }
       }
     };
-    if (user.roleName === 'GESTOR' || user.roleName === 'COLABORADOR' ) {
-      return this.projectsRepository.find({
-        relations,
-        order: { startDate: 'DESC' }
-      });
-    }
+   let whereClause: FindOptionsWhere<Project> | undefined;
 
+    if (user.roleName === 'GESTOR' || user.roleName === 'COLABORADOR') {
+      const assignments = await this.projectAssignmentRepository.find({
+        where: { employee: { id: user.id } },
+        relations: ['project'],
+        loadEagerRelations: false
+      });
+
+      const projectIds = Array.from(
+        new Set(
+          assignments
+            .map((assignment) => assignment.project?.id)
+            .filter((id): id is string => typeof id === 'string')
+        )
+      );
+
+      if (projectIds.length === 0) {
+        return [];
+      }
+
+      whereClause = { id: In(projectIds) };
+    }
+  
     const projects = await this.projectsRepository.find({
-      where: { collaborators: { employee: { id: user.id } } },
+      ...(whereClause ? { where: whereClause } : {}),
       relations,
       order: { startDate: 'DESC' }
     });
@@ -143,6 +160,13 @@ export class ProjectsService {
         (assignment) => assignment.employee?.id === user.id
       );
     });
+    if (user.roleName === 'COLABORADOR') {
+      projects.forEach((project) => {
+        project.taskAssignments = (project.taskAssignments ?? []).filter(
+          (assignment) => assignment.employee?.id === user.id
+        );
+      });
+    }
 
     return projects;
   }
