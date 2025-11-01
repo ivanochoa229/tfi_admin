@@ -27,8 +27,8 @@ export class ProjectsController {
 
   @Post()
   @Roles('GESTOR')
-  createProject(@Body() dto: CreateProjectDto) {
-    return this.projectsService.createProject(dto);
+  createProject(@Body() dto: CreateProjectDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.projectsService.createProject(dto, user);
   }
 
   @Get()

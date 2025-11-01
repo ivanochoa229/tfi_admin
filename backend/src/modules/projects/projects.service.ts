@@ -83,7 +83,7 @@ export class ProjectsService {
     private readonly taskEvolutionRepository: Repository<TaskEvolution>
   ) {}
 
-  async createProject(dto: CreateProjectDto): Promise<Project> {
+  async createProject(dto: CreateProjectDto, user: AuthenticatedUser): Promise<Project> {
     const priority = await this.prioritiesRepository.findOne({ where: { id: dto.priorityId } });
     if (!priority) {
       throw new NotFoundException('La prioridad seleccionada no existe');
@@ -99,7 +99,22 @@ export class ProjectsService {
       priority
     });
 
-    return this.projectsRepository.save(project);
+    const savedProject = await this.projectsRepository.save(project);
+
+    const manager = await this.employeesRepository.findOne({ where: { id: user.id } });
+    if (!manager) {
+      throw new NotFoundException('No se encontró el gestor responsable del proyecto');
+    }
+
+    const assignment = this.projectAssignmentRepository.create({
+      project: savedProject,
+      employee: manager
+    });
+    await this.projectAssignmentRepository.save(assignment);
+
+    savedProject.collaborators = [...(savedProject.collaborators ?? []), assignment];
+
+    return savedProject;
   }
 
   async findAllForUser(user: AuthenticatedUser): Promise<Project[]> {
