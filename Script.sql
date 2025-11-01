@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS evolucion_tarea (
   id_empleado UUID,
   id_tarea UUID,
   id_estado_tarea UUID,
+  descripcion_cambio VARCHAR(255),
   fecha_inicio DATE NOT NULL,
   fecha_fin DATE,
   CONSTRAINT fk_evolucion_empleado
@@ -322,15 +323,15 @@ WITH
 
     -- Evolución de Tareas (Evolucion_Tarea)
     evolucion_tarea_ins AS (
-        INSERT INTO evolucion_tarea (id_cambio, id_empleado, id_tarea, id_estado_tarea, fecha_inicio, fecha_fin) VALUES
+        INSERT INTO evolucion_tarea (id_cambio, id_empleado, id_tarea, id_estado_tarea, descripcion_cambio, fecha_inicio, fecha_fin) VALUES
         -- Tarea: Diseño UX/UI de la App (EN CURSO)
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), CURRENT_DATE - INTERVAL '16 days', CURRENT_DATE - INTERVAL '15 days'),
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), CURRENT_DATE - INTERVAL '15 days', NULL),
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), 'Creación de la tarea', CURRENT_DATE - INTERVAL '16 days', CURRENT_DATE - INTERVAL '15 days'),
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Tarea iniciada por el equipo de UX', CURRENT_DATE - INTERVAL '15 days', NULL),
         -- Tarea: Ejecución de Migración (EN REVISION)
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), CURRENT_DATE - INTERVAL '12 days', CURRENT_DATE - INTERVAL '10 days'),
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), CURRENT_DATE - INTERVAL '10 days', NULL),
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Inicio de migración de datos', CURRENT_DATE - INTERVAL '12 days', CURRENT_DATE - INTERVAL '10 days'),
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), 'Migración lista para revisión', CURRENT_DATE - INTERVAL '10 days', NULL),
         -- Tarea: Configuración Inicial ERP (COMPLETADA)
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Configuración Inicial ERP'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), CURRENT_DATE - INTERVAL '4 months', NULL)
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_tarea FROM tareas_cte WHERE descripcion_tarea = 'Configuración Inicial ERP'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), 'Configuración finalizada y validada', CURRENT_DATE - INTERVAL '4 months', NULL)
     ),
 
     -- Tarea_Proyecto (Asignación de Empleados y Recursos a Tareas en Proyectos)
