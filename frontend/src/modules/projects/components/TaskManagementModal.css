@@ -1,0 +1,131 @@
+.task-management-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
+}
+
+.task-management-modal {
+  background: #fff;
+  border-radius: 18px;
+  width: min(960px, 100%);
+  max-height: min(90vh, 960px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+  overflow: hidden;
+}
+
+.task-management-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.75rem 2rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.task-management-modal__header > div span {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.task-management-modal__header h4 {
+  margin: 0.35rem 0 1rem;
+  font-size: 1.5rem;
+  color: #0f172a;
+}
+
+.task-management-modal__header button {
+  border: none;
+  background: #f1f5f9;
+  color: #0f172a;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.task-management-modal__info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.task-management-modal__info span {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+}
+
+.task-management-modal__info strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.task-management-modal__body {
+  padding: 1.5rem 2rem;
+  overflow-y: auto;
+}
+
+.task-management-modal__description {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+}
+
+.task-management-modal__grid {
+  border-top: none;
+  padding-top: 0;
+  gap: 2rem;
+}
+
+.task-management-modal__footer {
+  padding: 1.25rem 2rem 1.75rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.task-management-modal__footer button {
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.5rem;
+  font-weight: 600;
+  background: #1d4ed8;
+  color: #fff;
+  cursor: pointer;
+}
+
+.task-management-modal__footer button.secondary {
+  background: #e2e8f0;
+  color: #1f2937;
+}
+
+@media (max-width: 720px) {
+  .task-management-modal {
+    width: 100%;
+  }
+
+  .task-management-modal__header,
+  .task-management-modal__body,
+  .task-management-modal__footer {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}

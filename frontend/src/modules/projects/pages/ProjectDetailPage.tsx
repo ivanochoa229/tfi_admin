@@ -21,6 +21,7 @@ import {
 } from '../../shared/utils/format';
 import StatusBadge from '../components/StatusBadge';
 import TaskEvolutionModal from '../components/TaskEvolutionModal';
+import TaskManagementModal from '../components/TaskManagementModal';
 import './ProjectDetailPage.css';
 import useDismissOnInteraction from '../../shared/hooks/useDismissOnInteraction';
 
@@ -77,7 +78,6 @@ const ProjectDetailPage = () => {
   const [pendingTask, setPendingTask] = useState<CreateTaskPayload | null>(null);
   const [taskMessage, setTaskMessage] = useState<string | null>(null);
   const [taskError, setTaskError] = useState<string | null>(null);
-  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [collaboratorDrafts, setCollaboratorDrafts] = useState<Record<string, string[]>>({});
   const [statusDrafts, setStatusDrafts] = useState<Record<string, { status: TaskStatus; note: string }>>({});
   const [resourceDrafts, setResourceDrafts] = useState<Record<string, { resourceId: string; quantity: string }>>({});
@@ -85,6 +85,7 @@ const ProjectDetailPage = () => {
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [selectedTaskEvolution, setSelectedTaskEvolution] = useState<Task | null>(null);
+  const [managedTask, setManagedTask] = useState<Task | null>(null);
 
   const dismissFeedback = useCallback(() => {
     setTaskMessage(null);
@@ -95,6 +96,10 @@ const ProjectDetailPage = () => {
 
   const closeEvolutionModal = useCallback(() => {
     setSelectedTaskEvolution(null);
+  }, []);
+
+  const closeTaskManagement = useCallback(() => {
+    setManagedTask(null);
   }, []);
 
   const hasFeedback = Boolean(taskMessage || taskError || actionFeedback || actionError);
@@ -202,8 +207,8 @@ const ProjectDetailPage = () => {
     setPendingTask(null);
   };
 
-  const toggleTaskSection = (taskId: string) => {
-    setExpandedTaskId((current) => (current === taskId ? null : taskId));
+  const openTaskManagement = (task: Task) => {
+    setManagedTask(task);
     setActionError(null);
     setActionFeedback(null);
   };
@@ -553,10 +558,7 @@ const ProjectDetailPage = () => {
         <div className="task-list">
           {tasksToRender.length === 0 && <p className="task-card__empty">{emptyTasksMessage}</p>}
           {tasksToRender.map((task) => {
-            const collaboratorSelection = collaboratorDrafts[task.id] ?? task.assigneeIds;
-            const statusDraft = statusDrafts[task.id];
-            const pendingDocs = documentationDrafts[task.id] ?? [];
-            const isExpanded = expandedTaskId === task.id;
+            const isManaged = managedTask?.id === task.id;
 
             return (
               <article key={task.id} className="task-card">
@@ -646,8 +648,11 @@ const ProjectDetailPage = () => {
                     <button type="button" className="secondary" onClick={() => setSelectedTaskEvolution(task)}>
                       Ver evolución
                     </button>
-                    <button type="button" onClick={() => toggleTaskSection(task.id)}>
-                      {isExpanded ? 'Cerrar gestión' : 'Gestionar tarea'}
+                    <button
+                      type="button"
+                      onClick={() => (isManaged ? closeTaskManagement() : openTaskManagement(task))}
+                    >
+                      {isManaged ? 'Cerrar gestión' : 'Gestionar tarea'}
                     </button>
                   </div>
                   {isManager && (
@@ -656,117 +661,38 @@ const ProjectDetailPage = () => {
                     </button>
                   )}
                 </footer>
-
-                {isExpanded && (
-                  <div className="task-card__management">
-                    {isManager && (
-                      <div>
-                        <h5>Actualizar colaboradores</h5>
-                        <div className="task-card__options">
-                          {collaboratorOptions.map((collaborator) => (
-                            <label key={collaborator.id}>
-                              <input
-                                type="checkbox"
-                                checked={collaboratorSelection.includes(collaborator.id)}
-                                onChange={() => handleCollaboratorToggle(task, collaborator.id)}
-                              />
-                              {collaborator.firstName} {collaborator.lastName} ({collaborator.role})
-                            </label>
-                          ))}
-                        </div>
-                        <button type="button" onClick={() => confirmCollaboratorUpdate(task)}>
-                          Confirmar colaboradores
-                        </button>
-                      </div>
-                    )}
-
-                    <div>
-                      <h5>Actualizar estado</h5>
-                      <div className="task-card__status">
-                        <select
-                          value={statusDraft?.status ?? task.status}
-                          onChange={(event) => handleStatusDraftChange(task, 'status', event.target.value)}
-                        >
-                          {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                            <option key={value} value={value} disabled={value === TaskStatus.Created}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                        <textarea
-                          placeholder="Describe el avance registrado"
-                          value={statusDraft?.note ?? ''}
-                          onChange={(event) => handleStatusDraftChange(task, 'note', event.target.value)}
-                          rows={2}
-                        />
-                        <button type="button" onClick={() => confirmStatusUpdate(task)}>
-                          Confirmar actualización
-                        </button>
-                      </div>
-                    </div>
-
-                    {isManager && (
-                      <div>
-                        <h5>Asignar recursos</h5>
-                        <div className="task-card__resources-form">
-                          <select
-                            value={resourceDrafts[task.id]?.resourceId ?? ''}
-                            onChange={(event) => prepareResourceAssignment(task, event.target.value)}
-                          >
-                            <option value="">Selecciona un recurso</option>
-                            {resources.map((resource) => (
-                              <option key={resource.id} value={resource.id}>
-                                {resource.name} ({formatCurrency(resource.cost)})
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            type="number"
-                            min={1}
-                            value={resourceDrafts[task.id]?.quantity ?? '1'}
-                            onChange={(event) => handleResourceQuantityChange(task.id, event.target.value)}
-                            placeholder="Cantidad"
-                          />
-                          <button type="button" onClick={() => confirmResourceAssignment(task)}>
-                            Confirmar asignación
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <h5>Gestionar documentación</h5>
-                      <div className="task-card__documents">
-                        <input
-                          type="file"
-                          multiple
-                          onChange={(event) => handleDocumentationSelection(task.id, event)}
-                        />
-                        {pendingDocs.length > 0 && (
-                          <div className="task-card__pending-docs">
-                            <span>Archivos seleccionados:</span>
-                            <ul>
-                              {pendingDocs.map((file) => (
-                                <li key={`${file.name}-${file.size}-${file.lastModified}`}>
-                                  {file.name}
-                                </li>
-                              ))}
-                            </ul>
-                            <button type="button" onClick={() => confirmDocumentationUpload(task.id)}>
-                              Confirmar carga
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </article>
             );
           })}
         </div>
       </section>
     </div>
+    {managedTask && (
+      <TaskManagementModal
+        task={managedTask}
+        onClose={closeTaskManagement}
+        isManager={isManager}
+        collaboratorOptions={collaboratorOptions}
+        collaboratorSelection={collaboratorDrafts[managedTask.id] ?? managedTask.assigneeIds}
+        onToggleCollaborator={(collaboratorId) =>
+          handleCollaboratorToggle(managedTask, collaboratorId)
+        }
+        onConfirmCollaborators={() => confirmCollaboratorUpdate(managedTask)}
+        statusDraft={statusDrafts[managedTask.id]}
+        statusLabels={STATUS_LABELS}
+        onStatusChange={(field, value) => handleStatusDraftChange(managedTask, field, value)}
+        onConfirmStatus={() => confirmStatusUpdate(managedTask)}
+        resources={resources}
+        resourceDraft={resourceDrafts[managedTask.id]}
+        onPrepareResource={(resourceId) => prepareResourceAssignment(managedTask, resourceId)}
+        onResourceQuantityChange={(quantity) => handleResourceQuantityChange(managedTask.id, quantity)}
+        onConfirmResource={() => confirmResourceAssignment(managedTask)}
+        documentationDraft={documentationDrafts[managedTask.id] ?? []}
+        onSelectDocumentation={(event) => handleDocumentationSelection(managedTask.id, event)}
+        onConfirmDocumentation={() => confirmDocumentationUpload(managedTask.id)}
+        priorityLabels={PRIORITY_LABELS}
+      />
+    )}
     {selectedTaskEvolution && (
       <TaskEvolutionModal task={selectedTaskEvolution} onClose={closeEvolutionModal} />
     )}
