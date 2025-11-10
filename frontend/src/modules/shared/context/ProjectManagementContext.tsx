@@ -583,21 +583,27 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
       const normalizedStartDate = normalizeDateTimeInput(payload.startDate);
       const normalizedEstimatedDate = normalizeDateTimeInput(payload.endDate);
 
-      const { data } = await apiClient.post<ApiProject>(
-        '/projects',
-        {
-          name: payload.name.trim(),
-          description: payload.description.trim(),
-          startDate: normalizedStartDate,
-          estimatedDate: normalizedEstimatedDate,
-          budget: payload.budget,
-          priorityId
-        },
-        withAuthorization(token)
-      );
+       try {
+        const { data } = await apiClient.post<ApiProject>(
+          '/projects',
+          {
+            name: payload.name.trim(),
+            description: payload.description.trim(),
+            startDate: normalizedStartDate,
+            estimatedDate: normalizedEstimatedDate,
+            budget: payload.budget,
+            priorityId
+          },
+          withAuthorization(token)
+        );
 
       const project = await loadProject(data.id);
-      return project ?? mapApiProjectToProject(data);
+        return project ?? mapApiProjectToProject(data);
+      } catch (error) {
+        throw new Error(
+          extractApiErrorMessage(error, 'No se pudo crear el proyecto. Verifica los datos e intenta nuevamente.')
+        );
+      }
     },
     [ensureAuthenticated, resolvePriorityId, token, loadProject]
   );
@@ -609,36 +615,45 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
       const normalizedStartDate = normalizeDateTimeInput(payload.startDate);
       const normalizedDueDate = normalizeDateTimeInput(payload.dueDate);
 
-      const { data } = await apiClient.post<ApiTask>(
-        `/projects/${projectId}/tasks`,
-        {
-          name: payload.name.trim(),
-          description: payload.description?.trim() ? payload.description.trim() : undefined,
-          priorityId,
-          startDate: normalizedStartDate,
-          estimatedDate: normalizedDueDate
-        },
-        withAuthorization(token)
-      );
+      try {
+        const { data } = await apiClient.post<ApiTask>(
+          `/projects/${projectId}/tasks`,
+          {
+            name: payload.name.trim(),
+            description: payload.description?.trim() ? payload.description.trim() : undefined,
+            priorityId,
+            startDate: normalizedStartDate,
+            estimatedDate: normalizedDueDate
+          },
+          withAuthorization(token)
+        );
 
       const project = await loadProject(projectId);
-      const createdTask = project?.tasks.find((task) => task.id === data.id);
-      return (
-        createdTask ?? {
-          id: data.id,
-          name: data.name,
-          priority: mapPriorityDescription(data.priority),
-          startDate: data.startDate ?? project?.startDate ?? normalizedStartDate,
-          dueDate: data.estimatedDate ?? normalizedDueDate,
-          status: mapTaskStatusDescription(data.state),
-          description: data.description ?? payload.description ?? '',
-          assigneeIds: [],
-          documentation: [],
-          resources: [],
-          progressNotes: [],
-          createdAt: data.startDate ?? normalizedStartDate ?? new Date().toISOString()
-        }
-      );
+        const createdTask = project?.tasks.find((task) => task.id === data.id);
+        return (
+          createdTask ?? {
+            id: data.id,
+            name: data.name,
+            priority: mapPriorityDescription(data.priority),
+            startDate: data.startDate ?? project?.startDate ?? normalizedStartDate,
+            dueDate: data.estimatedDate ?? normalizedDueDate,
+            status: mapTaskStatusDescription(data.state),
+            description: data.description ?? payload.description ?? '',
+            assigneeIds: [],
+            documentation: [],
+            resources: [],
+            progressNotes: [],
+            createdAt: data.startDate ?? normalizedStartDate ?? new Date().toISOString()
+          }
+        );
+      } catch (error) {
+        throw new Error(
+          extractApiErrorMessage(
+            error,
+            'No se pudo crear la tarea. Verifica la información proporcionada e intenta nuevamente.'
+          )
+        );
+      }
     },
     [ensureAuthenticated, resolvePriorityId, token, loadProject]
   );
