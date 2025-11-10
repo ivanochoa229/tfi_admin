@@ -552,8 +552,8 @@ const ProjectDetailPage = () => {
           <span>{tasksToRender.length} registradas</span>
         </div>
 
-        {actionFeedback && <div className="alert alert--success">{actionFeedback}</div>}
-        {actionError && <div className="alert alert--error">{actionError}</div>}
+        {!managedTask && actionFeedback && <div className="alert alert--success">{actionFeedback}</div>}
+        {!managedTask && actionError && <div className="alert alert--error">{actionError}</div>}
 
         <div className="task-list">
           {tasksToRender.length === 0 && <p className="task-card__empty">{emptyTasksMessage}</p>}
@@ -691,6 +691,8 @@ const ProjectDetailPage = () => {
         onSelectDocumentation={(event) => handleDocumentationSelection(managedTask.id, event)}
         onConfirmDocumentation={() => confirmDocumentationUpload(managedTask.id)}
         priorityLabels={PRIORITY_LABELS}
+        actionFeedback={actionFeedback}
+        actionError={actionError}
       />
     )}
     {selectedTaskEvolution && (

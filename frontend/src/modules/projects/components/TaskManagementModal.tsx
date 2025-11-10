@@ -33,6 +33,8 @@ interface TaskManagementModalProps {
   onSelectDocumentation: (event: ChangeEvent<HTMLInputElement>) => void;
   onConfirmDocumentation: () => void;
   priorityLabels: Record<PriorityLevel, string>;
+  actionFeedback?: string | null;
+  actionError?: string | null;
   onClose: () => void;
 }
 
@@ -56,6 +58,8 @@ const TaskManagementModal = ({
   onSelectDocumentation,
   onConfirmDocumentation,
   priorityLabels,
+  actionFeedback,
+  actionError,
   onClose
 }: TaskManagementModalProps) => {
   useEffect(() => {
@@ -112,6 +116,17 @@ const TaskManagementModal = ({
         </header>
 
         <div className="task-management-modal__body">
+          {(actionFeedback || actionError) && (
+            <div
+              className={`task-management-modal__alert ${
+                actionError ? 'task-management-modal__alert--error' : 'task-management-modal__alert--success'
+              }`}
+              role={actionError ? 'alert' : 'status'}
+              aria-live={actionError ? 'assertive' : 'polite'}
+            >
+              {actionError ?? actionFeedback}
+            </div>
+          )}
           {task.description && (
             <p className="task-management-modal__description">{task.description}</p>
           )}
