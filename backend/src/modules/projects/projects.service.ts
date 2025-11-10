@@ -111,17 +111,25 @@ export class ProjectsService {
       throw new NotFoundException('La prioridad seleccionada no existe');
     }
 
+    const startDate = parseRequiredDateTime(
+      dto.startDate,
+      'La fecha de inicio del proyecto es inválida.'
+    );
+    const estimatedDate = parseRequiredDateTime(
+      dto.estimatedDate,
+      'La fecha estimada del proyecto es inválida.'
+    );
+    if (estimatedDate <= startDate) {
+      throw new BadRequestException(
+        'La fecha estimada del proyecto debe ser posterior a la fecha de inicio.'
+      );
+    }
+
     const project = this.projectsRepository.create({
       name: dto.name,
       description: dto.description,
-      startDate: parseRequiredDateTime(
-        dto.startDate,
-        'La fecha de inicio del proyecto es inválida.'
-      ),
-      estimatedDate: parseRequiredDateTime(
-        dto.estimatedDate,
-        'La fecha estimada del proyecto es inválida.'
-      ),
+      startDate,
+      estimatedDate,
       endDate: parseDateTimeOrNull(dto.endDate, 'La fecha de finalización del proyecto es inválida.'),
       budget: dto.budget.toString(),
       priority
@@ -297,16 +305,24 @@ export class ProjectsService {
       }
     }
 
+    const startDate = parseDateTimeOrNull(dto.startDate, 'La fecha de inicio de la tarea es inválida.');
+    const estimatedDate = parseDateTimeOrNull(
+      dto.estimatedDate,
+      'La fecha estimada de la tarea es inválida.'
+    );
+    if (startDate && estimatedDate && estimatedDate <= startDate) {
+      throw new BadRequestException(
+        'La fecha estimada de la tarea debe ser posterior a la fecha de inicio.'
+      );
+    }
+
     const task = this.tasksRepository.create({
       name: dto.name.trim(),
       description: dto.description?.trim() || undefined,
       priority,
       state,
-      startDate: parseDateTimeOrNull(dto.startDate, 'La fecha de inicio de la tarea es inválida.'),
-      estimatedDate: parseDateTimeOrNull(
-        dto.estimatedDate,
-        'La fecha estimada de la tarea es inválida.'
-      )
+      startDate,
+      estimatedDate
     });
 
     const savedTask = await this.tasksRepository.save(task);
