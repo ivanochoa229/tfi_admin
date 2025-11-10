@@ -3,7 +3,11 @@ import { IsDateString, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-va
 export class CreateTaskDto {
   @IsString()
   @IsNotEmpty()
-  description: string;
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 
   @IsUUID()
   priorityId: string;

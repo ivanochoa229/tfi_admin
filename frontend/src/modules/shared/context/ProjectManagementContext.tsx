@@ -249,12 +249,12 @@ const mapApiProjectToProject = (apiProject: ApiProject): Project => {
 
     const mappedTask: Task = existing ?? {
       id: task.id,
-      name: task.description,
+      name: task.name,
       priority: mapPriorityDescription(task.priority),
       startDate: task.startDate ?? apiProject.startDate,
       dueDate: task.estimatedDate ?? apiProject.estimatedDate,
       status: mapTaskStatusDescription(task.state),
-      description: '',
+      description: task.description ?? '',
       assigneeIds: [],
       documentation: (task.documents ?? []).map((document) => ({
         id: document.id,
@@ -280,12 +280,12 @@ const mapApiProjectToProject = (apiProject: ApiProject): Project => {
     if (!existingTask) {
       const newTask: Task = {
         id: allocation.task.id,
-        name: allocation.task.description,
+        name: allocation.task.name,
         priority: mapPriorityDescription(allocation.task.priority),
         startDate: allocation.task.startDate ?? apiProject.startDate,
         dueDate: allocation.task.estimatedDate ?? apiProject.estimatedDate,
         status: mapTaskStatusDescription(allocation.task.state),
-        description: '',
+        description: allocation.task.description ?? '',
         assigneeIds: [],
         documentation: [],
         resources: [],
@@ -606,7 +606,8 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
       const { data } = await apiClient.post<ApiTask>(
         `/projects/${projectId}/tasks`,
         {
-          description: payload.name.trim(),
+          name: payload.name.trim(),
+          description: payload.description?.trim() ? payload.description.trim() : undefined,
           priorityId,
           startDate: payload.startDate,
           estimatedDate: payload.dueDate
@@ -619,12 +620,12 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
       return (
         createdTask ?? {
           id: data.id,
-          name: data.description,
+          name: data.name,
           priority: mapPriorityDescription(data.priority),
           startDate: data.startDate ?? project?.startDate ?? payload.startDate,
           dueDate: data.estimatedDate ?? payload.dueDate,
           status: mapTaskStatusDescription(data.state),
-          description: payload.description ?? '',
+          description: data.description ?? payload.description ?? '',
           assigneeIds: [],
           documentation: [],
           resources: [],

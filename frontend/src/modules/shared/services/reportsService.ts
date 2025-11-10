@@ -11,7 +11,8 @@ interface ApiCollaboratorTaskReport {
   };
   tasks: Array<{
     taskId: string;
-    description: string;
+    name: string;
+    description?: string | null;
     state: string | { description?: string } | null;
     project: {
       id: string;
@@ -29,7 +30,8 @@ interface ApiOverAssignmentReport {
   };
   tasks: Array<{
     taskId: string;
-    description: string;
+    name: string;
+    description?: string | null;
     state: string | { description?: string } | null;
     project: { id: string; name: string };
     startDate: string;
@@ -98,7 +100,7 @@ const mapCollaboratorTaskReport = (item: ApiCollaboratorTaskReport): Collaborato
     const status = mapTaskStatusDescription(task.state);
     return {
       id: task.taskId,
-      name: task.description,
+      name: task.name,
       status,
       statusLabel: getTaskStatusLabel(status),
       project: task.project
@@ -117,7 +119,7 @@ const mapOverAssignmentReport = (item: ApiOverAssignmentReport): OverAssignmentR
     const status = mapTaskStatusDescription(task.state);
     return {
       id: task.taskId,
-      name: task.description,
+      name: task.name,
       status,
       statusLabel: getTaskStatusLabel(status),
       project: task.project,

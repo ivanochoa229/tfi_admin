@@ -260,7 +260,8 @@ export class ProjectsService {
     }
 
     const task = this.tasksRepository.create({
-      description: dto.description,
+      name: dto.name.trim(),
+      description: dto.description?.trim() || undefined,
       priority,
       state,
       startDate: dto.startDate,

@@ -11,8 +11,11 @@ export class Task {
   @PrimaryGeneratedColumn('uuid', { name: 'id_tarea' })
   id: string;
 
-  @Column({ name: 'descripcion_tarea', type: 'varchar', length: 50 })
-  description: string;
+  @Column({ name: 'nombre_tarea', type: 'varchar', length: 50 })
+  name: string;
+
+  @Column({ name: 'descripcion_tarea', type: 'text', nullable: true })
+  description?: string;
 
   @ManyToOne(() => TaskState, (state) => state.tasks, { eager: true })
   @JoinColumn({ name: 'id_estado' })

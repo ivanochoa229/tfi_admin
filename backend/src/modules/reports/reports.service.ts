@@ -36,7 +36,8 @@ export class ReportsService {
       }
       grouped.get(key)?.tasks.push({
         taskId: assignment.task.id,
-        description: assignment.task.description,
+        name: assignment.task.name,
+        description: assignment.task.description ?? null,
         state: assignment.task.state.description,
         project: {
           id: assignment.project.id,
@@ -64,7 +65,8 @@ export class ReportsService {
         };
         tasks: Array<{
           id: string;
-          description: string;
+          name: string;
+          description: string | null;
           state: string;
           project: { id: string; name: string };
           startDate: Date;
@@ -116,7 +118,8 @@ export class ReportsService {
       if (entry && !alreadyRegistered) {
         entry.tasks.push({
           id: task.id,
-          description: task.description,
+          name: task.name,
+          description: task.description ?? null,
           state: task.state.description,
           project: {
             id: assignment.project.id,
@@ -164,7 +167,7 @@ export class ReportsService {
           .sort((a, b) => a.startLabel.localeCompare(b.startLabel))
           .map((task) => ({
             taskId: task.id,
-            description: task.description,
+            description: (task.description ?? task.name ?? '').toString(),
             state: task.state,
             project: task.project,
             startDate: task.startLabel,
