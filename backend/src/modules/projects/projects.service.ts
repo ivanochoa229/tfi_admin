@@ -189,18 +189,28 @@ export class ProjectsService {
   async findProjectDetail(projectId: string, user: AuthenticatedUser): Promise<Project> {
     const project = await this.projectsRepository.findOne({
       where: { id: projectId },
-      relations: [
-        'priority',
-        'taskAssignments',
-        'taskAssignments.task',
-        'taskAssignments.task.priority',
-        'taskAssignments.task.state',
-        'taskAssignments.employee',
-        'collaborators',
-        'collaborators.employee',
-        'resources',
-        'resources.resource'
-      ]
+      relations: {
+        priority: true,
+        taskAssignments: {
+          task: {
+            priority: true,
+            state: true,
+            documents: true,
+            evolutions: true
+          },
+          employee: true
+        },
+        collaborators: { employee: true },
+        resources: {
+          resource: true,
+          task: {
+            priority: true,
+            state: true,
+            documents: true,
+            evolutions: true
+          }
+        }
+      }
     });
 
     if (!project) {
