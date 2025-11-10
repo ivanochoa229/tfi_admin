@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
 import { useAuth } from '../../auth/AuthContext';
+import { isManagerRole } from '../../shared/utils/roles';
 import ProjectSummary from '../../projects/components/ProjectSummary';
 import { useProjectManagement } from '../../shared/context/ProjectManagementContext';
-import { ProjectStatus } from '../../shared/types/project';
 import { getProjectsVisibleToUser } from '../../shared/utils/access';
 import StatsCard from '../components/StatsCard';
 import './DashboardPage.css';
@@ -14,25 +14,22 @@ const DashboardPage = () => {
 
   const visibleProjects = useMemo(() => getProjectsVisibleToUser(projects, user), [projects, user]);
 
-  const { totalProjects, completedProjects, activeProjects, averageProgress, totalBudget, usedBudget } = useMemo(() => {
-    const total = visibleProjects.length;
-    const completed = visibleProjects.filter((project) => project.status === ProjectStatus.Completed).length;
-    const active = visibleProjects.filter((project) => project.status !== ProjectStatus.Completed).length;
-    const progress = total
-      ? Math.round(visibleProjects.reduce((acc, project) => acc + project.progress, 0) / total)
-      : 0;
+  const { totalBudget, usedBudget } = useMemo(() => {
     const budget = visibleProjects.reduce((acc, project) => acc + project.budget, 0);
     const used = visibleProjects.reduce((acc, project) => acc + project.usedBudget, 0);
 
     return {
-      totalProjects: total,
-      completedProjects: completed,
-      activeProjects: active,
-      averageProgress: progress,
       totalBudget: budget,
       usedBudget: used
     };
   }, [visibleProjects]);
+
+  const isManager = isManagerRole(user?.roleName);
+
+  const availableBudget = useMemo(() => {
+    const remaining = totalBudget - usedBudget;
+    return remaining > 0 ? remaining : 0;
+  }, [totalBudget, usedBudget]);
 
   if (isLoading && projects.length === 0) {
     return (
@@ -51,24 +48,23 @@ const DashboardPage = () => {
           <div className="dashboard-page__alert">{error}</div>
         </section>
       )}
-      <section className="dashboard-page__section">
-        <h2>Resumen general</h2>
-        <div className="dashboard-page__stats">
-          <StatsCard title="Proyectos totales" value={totalProjects} trend="+2 respecto al mes pasado" />
-          <StatsCard
-            title="Proyectos activos"
-            value={activeProjects}
-            trend="Incluye proyectos planificados y en progreso"
-          />
-          <StatsCard title="Completados" value={completedProjects} trend="Objetivo trimestral 80%" />
-          <StatsCard title="Avance promedio" value={`${averageProgress}%`} trend="Promedio ponderado" />
-          <StatsCard
-            title="Uso de presupuesto"
-            value={`USD ${usedBudget.toLocaleString()} / USD ${totalBudget.toLocaleString()}`}
-            trend="Suma total de proyectos"
-          />
-        </div>
-      </section>
+      {isManager && (
+        <section className="dashboard-page__section">
+          <h2>Resumen general</h2>
+          <div className="dashboard-page__stats">
+            <StatsCard
+              title="Presupuesto ocupado"
+              value={`USD ${usedBudget.toLocaleString()}`}
+              trend={`Sobre un total de USD ${totalBudget.toLocaleString()}`}
+            />
+            <StatsCard
+              title="Presupuesto disponible"
+              value={`USD ${availableBudget.toLocaleString()}`}
+              trend="Calculado según los proyectos visibles"
+            />
+          </div>
+        </section>
+      )}
 
       <section className="dashboard-page__section">
         <header className="dashboard-page__section-header">
