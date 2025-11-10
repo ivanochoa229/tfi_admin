@@ -148,6 +148,7 @@ export class ReportsService {
       employee: { id: string; firstName: string; lastName: string; email: string };
       tasks: Array<{
         taskId: string;
+        name: string;
         description: string;
         state: string;
         project: { id: string; name: string };
@@ -178,6 +179,7 @@ export class ReportsService {
           .sort((a, b) => a.startLabel.localeCompare(b.startLabel))
           .map((task) => ({
             taskId: task.id,
+            name: (task.name ?? '').toString(),
             description: (task.description ?? task.name ?? '').toString(),
             state: task.state,
             project: task.project,

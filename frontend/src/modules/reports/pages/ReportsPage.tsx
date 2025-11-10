@@ -193,7 +193,7 @@ const ReportsPage = () => {
                     <strong>
                       {collaborator.firstName} {collaborator.lastName}
                     </strong>
-                    <span>{collaborator.email}</span>
+                    <span> {collaborator.email}</span>
                   </td>
                   <td>
                     <ul>
@@ -203,9 +203,8 @@ const ReportsPage = () => {
                             {conflict.statusLabel}
                           </span>
                           <div>
-                            <strong>{conflict.name}</strong>
-                            <span><strong>Proyecto:</strong> {conflict.project.name}</span><br />
-                            <strong>Tarea: {conflict.name}</strong>
+                            <strong>{conflict.name}</strong><br />
+                            <span><strong>Proyecto:</strong> {conflict.project.name}</span>
                             <small>
                               {formatDateTime(conflict.startDate)} - {formatDateTime(conflict.endDate)}
                             </small>
