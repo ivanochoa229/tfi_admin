@@ -5,7 +5,6 @@ import { useAuth } from '../../auth/AuthContext';
 import { useProjectManagement } from '../../shared/context/ProjectManagementContext';
 import { TaskStatus } from '../../shared/types/project';
 import reportsService, {
-  CollaboratorTaskReportItem,
   DelayedProjectReportItem,
   OverAssignmentReportItem
 } from '../../shared/services/reportsService';
@@ -37,13 +36,11 @@ const ReportsPage = () => {
   const { projects, isLoading, error } = useProjectManagement();
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
-  const [collaboratorReports, setCollaboratorReports] = useState<CollaboratorTaskReportItem[]>([]);
   const [overAssignmentReports, setOverAssignmentReports] = useState<OverAssignmentReportItem[]>([]);
   const [delayedProjects, setDelayedProjects] = useState<DelayedProjectReportItem[]>([]);
 
   useEffect(() => {
     if (!token) {
-      setCollaboratorReports([]);
       setOverAssignmentReports([]);
       setDelayedProjects([]);
       setReportsError(null);
@@ -56,8 +53,7 @@ const ReportsPage = () => {
       setReportsLoading(true);
       setReportsError(null);
       try {
-        const [multipleTasksResult, overAssignedResult, delayedResult] = await Promise.allSettled([
-          reportsService.getCollaboratorsWithMultipleTasks(token),
+        const [overAssignedResult, delayedResult] = await Promise.allSettled([
           reportsService.getOverAssignedCollaborators(token),
           reportsService.getDelayedProjects(token)
         ]);
@@ -67,18 +63,7 @@ const ReportsPage = () => {
         
         const partialErrors: string[] = [];
 
-        if (multipleTasksResult.status === 'fulfilled') {
-          setCollaboratorReports(multipleTasksResult.value);
-        } else {
-          setCollaboratorReports([]);
-          partialErrors.push(
-            extractReportErrorMessage(
-              multipleTasksResult.reason,
-              'No fue posible cargar el reporte de colaboradores con múltiples tareas.'
-            )
-          );
-        }
-
+        
         if (overAssignedResult.status === 'fulfilled') {
           setOverAssignmentReports(overAssignedResult.value);
         } else {
@@ -109,7 +94,6 @@ const ReportsPage = () => {
           return;
         }
         setReportsError(extractReportErrorMessage(err, 'No fue posible cargar los reportes.'));
-        setCollaboratorReports([]);
         setOverAssignmentReports([]);
         setDelayedProjects([]);
       } finally {
@@ -158,7 +142,6 @@ const ReportsPage = () => {
   const isInitialLoading =
     (isLoading && projects.length === 0) ||
     (reportsLoading &&
-      collaboratorReports.length === 0 &&
       overAssignmentReports.length === 0 &&
       delayedProjects.length === 0);
 
@@ -188,51 +171,6 @@ const ReportsPage = () => {
 
       {error && <div className="reports__alert">{error}</div>}
       {reportsError && <div className="reports__alert">{reportsError}</div>}
-
-      <section className="reports__section">
-        <h3>Reporte de colaboradores con múltiples tareas</h3>
-        {reportsLoading && collaboratorReports.length === 0 ? (
-          <p className="reports__empty">Cargando colaboradores desde el backend...</p>
-        ) : collaboratorReports.length === 0 ? (
-          <p className="reports__empty">No existen colaboradores con más de una tarea asignada.</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Colaborador</th>
-                <th>Tareas asignadas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {collaboratorReports.map(({ collaborator, tasks }) => (
-                <tr key={collaborator.id}>
-                  <td>
-                    <strong>
-                      {collaborator.firstName} {collaborator.lastName}
-                    </strong>
-                    <span>{collaborator.email}</span>
-                  </td>
-                  <td>
-                    <ul>
-                      {tasks.map((task) => (
-                        <li key={task.id}>
-                          <span className={`status status--${task.status.toLowerCase()}`}>
-                            {task.statusLabel}
-                          </span>
-                          <div>
-                            <strong>{task.name}</strong>
-                            <span>{task.project.name}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
 
       <section className="reports__section">
         <h3>Reporte de sobreasignación de tareas</h3>

@@ -2,24 +2,6 @@ import { apiClient, withAuthorization } from './apiClient';
 import { mapTaskStatusDescription, getTaskStatusLabel } from '../utils/status';
 import { TaskStatus } from '../types/project';
 
-interface ApiCollaboratorTaskReport {
-  employee: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email?: string;
-  };
-  tasks: Array<{
-    taskId: string;
-    name: string;
-    description?: string | null;
-    state: string | { description?: string } | null;
-    project: {
-      id: string;
-      name: string;
-    };
-  }>;
-}
 
 interface ApiOverAssignmentReport {
   employee: {
@@ -47,21 +29,6 @@ interface ApiDelayedProjectReport {
   pendingTasks: number;
 }
 
-export interface CollaboratorTaskReportItem {
-  collaborator: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  tasks: Array<{
-    id: string;
-    name: string;
-    status: TaskStatus;
-    statusLabel: string;
-    project: { id: string; name: string };
-  }>;
-}
 
 export interface OverAssignmentReportItem {
   collaborator: {
@@ -89,24 +56,6 @@ export interface DelayedProjectReportItem {
   pendingTasks: number;
 }
 
-const mapCollaboratorTaskReport = (item: ApiCollaboratorTaskReport): CollaboratorTaskReportItem => ({
-  collaborator: {
-    id: item.employee.id,
-    firstName: item.employee.firstName,
-    lastName: item.employee.lastName,
-    email: item.employee.email ?? ''
-  },
-  tasks: item.tasks.map((task) => {
-    const status = mapTaskStatusDescription(task.state);
-    return {
-      id: task.taskId,
-      name: task.name,
-      status,
-      statusLabel: getTaskStatusLabel(status),
-      project: task.project
-    };
-  })
-});
 
 const mapOverAssignmentReport = (item: ApiOverAssignmentReport): OverAssignmentReportItem => ({
   collaborator: {
@@ -130,13 +79,6 @@ const mapOverAssignmentReport = (item: ApiOverAssignmentReport): OverAssignmentR
 });
 
 const reportsService = {
-  async getCollaboratorsWithMultipleTasks(token: string): Promise<CollaboratorTaskReportItem[]> {
-    const { data } = await apiClient.get<ApiCollaboratorTaskReport[]>(
-      '/reports/collaborators/multiple-tasks',
-      withAuthorization(token)
-    );
-    return data.map(mapCollaboratorTaskReport);
-  },
   async getOverAssignedCollaborators(token: string): Promise<OverAssignmentReportItem[]> {
     const { data } = await apiClient.get<ApiOverAssignmentReport[]>(
       '/reports/collaborators/over-assignment',
