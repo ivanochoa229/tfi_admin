@@ -204,8 +204,8 @@ const ReportsPage = () => {
                           </span>
                           <div>
                             <strong>{conflict.name}</strong>
+                            <span><strong>Proyecto:</strong> {conflict.project.name}</span><br />
                             <strong>Tarea: {conflict.name}</strong>
-                            <span>Proyecto: {conflict.project.name}</span>
                             <small>
                               {formatDateTime(conflict.startDate)} - {formatDateTime(conflict.endDate)}
                             </small>
