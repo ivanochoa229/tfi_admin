@@ -86,6 +86,18 @@ const ProjectDetailPage = () => {
   const [actionError, setActionError] = useState<string | null>(null);
   const [selectedTaskEvolution, setSelectedTaskEvolution] = useState<Task | null>(null);
   const [managedTask, setManagedTask] = useState<Task | null>(null);
+   const [priorityFilter, setPriorityFilter] = useState<'all' | PriorityLevel>('all');
+  const [startDateFilter, setStartDateFilter] = useState<string>('');
+  const [endDateFilter, setEndDateFilter] = useState<string>('');
+  const [sortOption, setSortOption] = useState<
+    | 'none'
+    | 'start-asc'
+    | 'start-desc'
+    | 'due-asc'
+    | 'due-desc'
+    | 'priority-asc'
+    | 'priority-desc'
+  >('none');
 
   const dismissFeedback = useCallback(() => {
     setTaskMessage(null);
@@ -140,6 +152,91 @@ const ProjectDetailPage = () => {
   const emptyTasksMessage = isManager
     ? 'Aún no se registraron tareas para este proyecto.'
     : 'No tienes tareas asignadas en este proyecto.';
+
+    const filteredTasks = useMemo(() => {
+    return tasksToRender.filter((task) => {
+      const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+
+      const dueDate = new Date(task.dueDate);
+      let matchesDate = true;
+
+      if (startDateFilter) {
+        const filterStart = new Date(startDateFilter);
+        matchesDate = matchesDate && dueDate >= filterStart;
+      }
+
+      if (endDateFilter) {
+        const filterEnd = new Date(endDateFilter);
+        filterEnd.setHours(23, 59, 59, 999);
+        matchesDate = matchesDate && dueDate <= filterEnd;
+      }
+
+      return matchesPriority && matchesDate;
+    });
+  }, [tasksToRender, priorityFilter, startDateFilter, endDateFilter]);
+
+  const sortedTasks = useMemo(() => {
+    if (sortOption === 'none') {
+      return filteredTasks;
+    }
+
+    const priorityWeight: Record<PriorityLevel, number> = {
+      [PriorityLevel.High]: 3,
+      [PriorityLevel.Medium]: 2,
+      [PriorityLevel.Low]: 1
+    };
+
+    const tasksWithIndex = filteredTasks.map((task, index) => ({ task, index }));
+
+    tasksWithIndex.sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortOption) {
+        case 'start-asc':
+          comparison = new Date(a.task.startDate).getTime() - new Date(b.task.startDate).getTime();
+          break;
+        case 'start-desc':
+          comparison = new Date(b.task.startDate).getTime() - new Date(a.task.startDate).getTime();
+          break;
+        case 'due-asc':
+          comparison = new Date(a.task.dueDate).getTime() - new Date(b.task.dueDate).getTime();
+          break;
+        case 'due-desc':
+          comparison = new Date(b.task.dueDate).getTime() - new Date(a.task.dueDate).getTime();
+          break;
+        case 'priority-asc':
+          comparison = priorityWeight[a.task.priority] - priorityWeight[b.task.priority];
+          break;
+        case 'priority-desc':
+          comparison = priorityWeight[b.task.priority] - priorityWeight[a.task.priority];
+          break;
+        default:
+          comparison = 0;
+      }
+
+      if (comparison !== 0) {
+        return comparison;
+      }
+
+      return a.index - b.index;
+    });
+
+    return tasksWithIndex.map(({ task }) => task);
+  }, [filteredTasks, sortOption]);
+
+  const hasActiveFilters = priorityFilter !== 'all' || startDateFilter !== '' || endDateFilter !== '';
+
+  const clearTaskFilters = () => {
+    setPriorityFilter('all');
+    setStartDateFilter('');
+    setEndDateFilter('');
+    setSortOption('none');
+  };
+
+  const totalTasksLabel = hasActiveFilters
+    ? `${sortedTasks.length} de ${tasksToRender.length} registradas`
+    : `${tasksToRender.length} registradas`;
+  const canResetFilters = hasActiveFilters || sortOption !== 'none';
 
   const handleTaskFieldChange = (
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -555,121 +652,201 @@ const ProjectDetailPage = () => {
       <section className="project-detail__section">
         <div className="project-detail__section-header">
           <h3>{isManager ? 'Tareas del proyecto' : 'Mis tareas asignadas'}</h3>
-          <span>{tasksToRender.length} registradas</span>
+          <span>{totalTasksLabel}</span>
         </div>
 
         {!managedTask && actionFeedback && <div className="alert alert--success">{actionFeedback}</div>}
         {!managedTask && actionError && <div className="alert alert--error">{actionError}</div>}
 
-        <div className="task-list">
-          {tasksToRender.length === 0 && <p className="task-card__empty">{emptyTasksMessage}</p>}
-          {tasksToRender.map((task) => {
-            const isManaged = managedTask?.id === task.id;
+        <div className="task-controls">
+          <label>
+            Prioridad
+            <select
+              value={priorityFilter}
+              onChange={(event) => setPriorityFilter(event.target.value as 'all' | PriorityLevel)}
+            >
+              <option value="all">Todas</option>
+              {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Fecha estimada desde
+            <input type="date" value={startDateFilter} onChange={(event) => setStartDateFilter(event.target.value)} />
+          </label>
+          <label>
+            Fecha estimada hasta
+            <input type="date" value={endDateFilter} onChange={(event) => setEndDateFilter(event.target.value)} />
+          </label>
+          <label>
+            Ordenar por
+            <select
+              value={sortOption}
+              onChange={(event) =>
+                setSortOption(
+                  event.target.value as
+                    | 'none'
+                    | 'start-asc'
+                    | 'start-desc'
+                    | 'due-asc'
+                    | 'due-desc'
+                    | 'priority-asc'
+                    | 'priority-desc'
+                )
+              }
+            >
+              <option value="none">Sin orden (predeterminado)</option>
+              <option value="start-asc">Fecha de inicio (más antigua primero)</option>
+              <option value="start-desc">Fecha de inicio (más reciente primero)</option>
+              <option value="due-asc">Fecha estimada (más cercana primero)</option>
+              <option value="due-desc">Fecha estimada (más lejana primero)</option>
+              <option value="priority-asc">Prioridad (de baja a alta)</option>
+              <option value="priority-desc">Prioridad (de alta a baja)</option>
+            </select>
+          </label>
+          <button type="button" onClick={clearTaskFilters} disabled={!canResetFilters}>
+            Limpiar
+          </button>
+        </div>
 
-            return (
-              <article key={task.id} className="task-card">
-                <header>
-                  <div>
-                    <h4>{task.name}</h4>
-                    <span className={`priority priority--${task.priority.toLowerCase()}`}>
-                      {PRIORITY_LABELS[task.priority]}
-                    </span>
-                  </div>
-                  <div className="task-card__meta">
-                    <span>Estado: {STATUS_LABELS[task.status]}</span>
-                    <span>
-                      Fechas: {formatDateTime(task.startDate)} → {formatDateTime(task.dueDate)}
-                    </span>
-                  </div>
-                </header>
+        <div className="task-table__wrapper">
+          {sortedTasks.length === 0 ? (
+            <p className="task-card__empty">
+              {tasksToRender.length === 0
+                ? emptyTasksMessage
+                : 'No se encontraron tareas con los filtros aplicados.'}
+            </p>
+          ) : (
+            <table className="task-table">
+              <thead>
+                <tr>
+                  <th>Tarea</th>
+                  <th>Prioridad</th>
+                  <th>Estado y fechas</th>
+                  <th>Colaboradores</th>
+                  <th>Recursos asignados</th>
+                  <th>Documentación</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedTasks.map((task) => {
+                  const isManaged = managedTask?.id === task.id;
 
-                <p>{task.description || 'Sin descripción registrada.'}</p>
-
-                <div className="task-card__section">
-                  <h5>Colaboradores</h5>
-                  {task.assigneeIds.length === 0 ? (
-                    <p className="task-card__empty">Sin colaboradores asignados.</p>
-                  ) : (
-                    <ul>
-                      {task.assigneeIds.map((id) => (
-                        <li key={id}>{getCollaboratorFullName(collaborators, id)}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                  <div className="task-card__section">
-                    <h5>Recursos asignados</h5>
-                    {task.resources.length === 0 ? (
-                      <p className="task-card__empty">Aún no se asignaron recursos.</p>
-                    ) : (
-                    <ul>
-                      {task.resources.map((resource) => (
-                        <li key={resource.id}>
-                          <div>
-                            <strong>{resource.name}</strong>
-                            <span>
-                              {resource.quantity} unidad{resource.quantity === 1 ? '' : 'es'} •{' '}
-                              {formatCurrency(resource.unitCost)} c/u
-                            </span>
-                            <span>{new Date(resource.assignedAt).toLocaleString()}</span>
-                          </div>
-                          <div className="task-card__resource-actions">
-                            <span>{formatCurrency(resource.cost)}</span>
-                            {isManager && (
-                              <button type="button" onClick={() => confirmResourceRemoval(task.id, resource.id)}>
-                                Quitar
-                              </button>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <div className="task-card__section">
-                  <h5>Documentación</h5>
-                  {task.documentation.length === 0 ? (
-                    <p className="task-card__empty">No se adjuntaron documentos.</p>
-                  ) : (
-                    <ul>
-                      {task.documentation.map((document) => (
-                        <li key={document.id}>
-                          <div>
-                            <strong>{document.name}</strong>
-                            <span>{new Date(document.uploadedAt).toLocaleString()}</span>
-                          </div>
-                          <button type="button" onClick={() => confirmDocumentRemoval(task.id, document.id)}>
-                            Eliminar
+                  return (
+                    <tr key={task.id}>
+                      <td>
+                        <div className="task-table__name">
+                          <strong>{task.name}</strong>
+                          <span>{task.description || 'Sin descripción registrada.'}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`priority priority--${task.priority.toLowerCase()}`}>
+                          {PRIORITY_LABELS[task.priority]}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="task-table__meta">
+                          <span>{STATUS_LABELS[task.status]}</span>
+                          <span>
+                            {formatDateTime(task.startDate)} → {formatDateTime(task.dueDate)}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        {task.assigneeIds.length === 0 ? (
+                          <p className="task-card__empty">Sin colaboradores asignados.</p>
+                        ) : (
+                          <ul className="task-table__list">
+                            {task.assigneeIds.map((id) => (
+                              <li key={id}>{getCollaboratorFullName(collaborators, id)}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                      <td>
+                        {task.resources.length === 0 ? (
+                          <p className="task-card__empty">Aún no se asignaron recursos.</p>
+                        ) : (
+                          <ul className="task-table__resource-list">
+                            {task.resources.map((resource) => (
+                              <li key={resource.id}>
+                                <div>
+                                  <strong>{resource.name}</strong>
+                                  <span>
+                                    {resource.quantity} unidad{resource.quantity === 1 ? '' : 'es'} •{' '}
+                                    {formatCurrency(resource.unitCost)} c/u
+                                  </span>
+                                  <span>{new Date(resource.assignedAt).toLocaleString()}</span>
+                                </div>
+                                <div className="task-table__resource-actions">
+                                  <span>{formatCurrency(resource.cost)}</span>
+                                  {isManager && (
+                                    <button
+                                      type="button"
+                                      onClick={() => confirmResourceRemoval(task.id, resource.id)}
+                                    >
+                                      Quitar
+                                    </button>
+                                  )}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                      <td>
+                        {task.documentation.length === 0 ? (
+                          <p className="task-card__empty">No se adjuntaron documentos.</p>
+                        ) : (
+                          <ul className="task-table__document-list">
+                            {task.documentation.map((document) => (
+                              <li key={document.id}>
+                                <div>
+                                  <strong>{document.name}</strong>
+                                  <span>{new Date(document.uploadedAt).toLocaleString()}</span>
+                                </div>
+                                <div className="task-table__document-actions">
+                                  <button
+                                    type="button"
+                                    onClick={() => confirmDocumentRemoval(task.id, document.id)}
+                                  >
+                                    Eliminar
+                                  </button>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                      <td>
+                        <div className="task-table__actions">
+                          <button type="button" className="secondary" onClick={() => setSelectedTaskEvolution(task)}>
+                            Ver evolución
                           </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <footer className="task-card__actions">
-                  <div className="task-card__actions-group">
-                    <button type="button" className="secondary" onClick={() => setSelectedTaskEvolution(task)}>
-                      Ver evolución
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => (isManaged ? closeTaskManagement() : openTaskManagement(task))}
-                    >
-                      {isManaged ? 'Cerrar gestión' : 'Gestionar tarea'}
-                    </button>
-                  </div>
-                  {isManager && (
-                    <button type="button" className="danger" onClick={() => confirmTaskDeletion(task)}>
-                      Eliminar tarea
-                    </button>
-                  )}
-                </footer>
-              </article>
-            );
-          })}
+                          <button
+                            type="button"
+                            onClick={() => (isManaged ? closeTaskManagement() : openTaskManagement(task))}
+                          >
+                            {isManaged ? 'Cerrar gestión' : 'Gestionar tarea'}
+                          </button>
+                        {isManager && (
+                            <button type="button" className="danger" onClick={() => confirmTaskDeletion(task)}>
+                              Eliminar tarea
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </section>
     </div>

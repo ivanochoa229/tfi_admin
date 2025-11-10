@@ -163,6 +163,198 @@
   gap: 0.5rem;
 }
 
+.task-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.task-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.task-controls select,
+.task-controls input {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.task-controls button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #1f2937;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 0.35rem;
+}
+
+.task-controls button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.task-table__wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 960px;
+}
+
+.task-table th,
+.task-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.task-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.task-table tbody tr:nth-child(even) td {
+  background: #fbfdff;
+}
+
+.task-table__name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.task-table__name strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.task-table__name span {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.task-table__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.task-table__list,
+.task-table__resource-list,
+.task-table__document-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.task-table__list li,
+.task-table__resource-list li,
+.task-table__document-list li {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.task-table__list li {
+  color: #0f172a;
+}
+
+.task-table__resource-list li strong,
+.task-table__document-list li strong {
+  display: block;
+  color: #0f172a;
+}
+
+.task-table__resource-list li span,
+.task-table__document-list li span {
+  display: block;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.task-table__resource-list li > div:first-child,
+.task-table__document-list li > div:first-child {
+  flex: 1;
+}
+
+.task-table__resource-actions,
+.task-table__document-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.task-table__resource-actions span {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.task-table__document-actions {
+  justify-content: flex-end;
+}
+
+.task-table__resource-actions button,
+.task-table__document-actions button {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.task-table__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-table__actions button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #2563eb;
+  color: #fff;
+}
+
+.task-table__actions button.secondary {
+  background: #e2e8f0;
+  color: #1f2937;
+}
+
+.task-table__actions button.danger {
+  background: #dc2626;
+}
+
+
 .task-list {
   display: flex;
   flex-direction: column;
