@@ -13,7 +13,12 @@ import {
 } from '../../shared/types/project';
 import { canUserAccessProject, getTasksVisibleToUser } from '../../shared/utils/access';
 import { isManagerRole } from '../../shared/utils/roles';
-import { formatCurrency, getCollaboratorFullName } from '../../shared/utils/format';
+import {
+  formatCurrency,
+  formatDateTime,
+  getCollaboratorFullName,
+  normalizeDateTimeInput
+} from '../../shared/utils/format';
 import StatusBadge from '../components/StatusBadge';
 import TaskEvolutionModal from '../components/TaskEvolutionModal';
 import './ProjectDetailPage.css';
@@ -162,7 +167,10 @@ const ProjectDetailPage = () => {
       return;
     }
 
-    setPendingTask(taskForm);
+    const normalizedStart = normalizeDateTimeInput(taskForm.startDate);
+    const normalizedDueDate = normalizeDateTimeInput(taskForm.dueDate);
+
+    setPendingTask({ ...taskForm, startDate: normalizedStart, dueDate: normalizedDueDate });
   };
 
   useEffect(() => {
@@ -425,7 +433,7 @@ const ProjectDetailPage = () => {
           <div>
             <span>Fechas</span>
             <strong>
-              {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
+              {formatDateTime(project.startDate)} - {formatDateTime(project.endDate)}
             </strong>
           </div>
           <div>
@@ -462,11 +470,25 @@ const ProjectDetailPage = () => {
               </label>
               <label>
                 Fecha inicio
-                <input type="date" name="startDate" value={taskForm.startDate} onChange={handleTaskFieldChange} required />
+                <input
+                  type="datetime-local"
+                  step={1}
+                  name="startDate"
+                  value={taskForm.startDate}
+                  onChange={handleTaskFieldChange}
+                  required
+                />
               </label>
               <label>
                 Fecha estimada
-                <input type="date" name="dueDate" value={taskForm.dueDate} onChange={handleTaskFieldChange} required />
+                <input
+                  type="datetime-local"
+                  step={1}
+                  name="dueDate"
+                  value={taskForm.dueDate}
+                  onChange={handleTaskFieldChange}
+                  required
+                />
               </label>
             </div>
             <label className="task-form__description">
@@ -497,7 +519,8 @@ const ProjectDetailPage = () => {
                   <strong>Prioridad:</strong> {PRIORITY_LABELS[pendingTask.priority]}
                 </li>
                 <li>
-                  <strong>Fechas:</strong> {pendingTask.startDate} → {pendingTask.dueDate}
+                  <strong>Fechas:</strong> {formatDateTime(pendingTask.startDate)} →{' '}
+                  {formatDateTime(pendingTask.dueDate)}
                 </li>
                 <li>
                   <strong>Descripción:</strong> {pendingTask.description || 'Sin descripción'}
@@ -545,8 +568,7 @@ const ProjectDetailPage = () => {
                   <div className="task-card__meta">
                     <span>Estado: {STATUS_LABELS[task.status]}</span>
                     <span>
-                      Fechas: {new Date(task.startDate).toLocaleDateString()} →{' '}
-                      {new Date(task.dueDate).toLocaleDateString()}
+                      Fechas: {formatDateTime(task.startDate)} → {formatDateTime(task.dueDate)}
                     </span>
                   </div>
                 </header>

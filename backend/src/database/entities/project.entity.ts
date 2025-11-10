@@ -9,14 +9,14 @@ export class Project {
   @PrimaryGeneratedColumn('uuid', { name: 'id_proyecto' })
   id: string;
 
-  @Column({ name: 'fecha_inicio', type: 'date' })
-  startDate: string;
+  @Column({ name: 'fecha_inicio', type: 'timestamptz' })
+  startDate: Date;
 
-  @Column({ name: 'fecha_estimada', type: 'date' })
-  estimatedDate: string;
+  @Column({ name: 'fecha_estimada', type: 'timestamptz' })
+  estimatedDate: Date;
 
-  @Column({ name: 'fecha_fin', type: 'date', nullable: true })
-  endDate?: string;
+  @Column({ name: 'fecha_fin', type: 'timestamptz', nullable: true })
+  endDate?: Date | null;
 
   @Column({ name: 'nombre_proyecto', type: 'varchar', length: 80 })
   name: string;

@@ -77,7 +77,18 @@ export class ReportsService {
       }
     >();
 
-    const toDate = (value?: string | null) => (value ? new Date(`${value}T00:00:00Z`) : null);
+    const toDate = (value?: string | Date | null) => {
+      if (!value) {
+        return null;
+      }
+
+      if (value instanceof Date) {
+        return value;
+      }
+
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
 
     assignments.forEach((assignment) => {
       const employee = assignment.employee;
@@ -97,8 +108,8 @@ export class ReportsService {
 
       const rangeStart = startDate <= endDate ? startDate : endDate;
       const rangeEnd = startDate <= endDate ? endDate : startDate;
-      const startLabel = rangeStart.toISOString().slice(0, 10);
-      const endLabel = rangeEnd.toISOString().slice(0, 10);
+      const startLabel = rangeStart.toISOString();
+      const endLabel = rangeEnd.toISOString();
 
       const key = employee.id;
       if (!assignmentsByEmployee.has(key)) {

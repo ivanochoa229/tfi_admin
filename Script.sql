@@ -26,9 +26,9 @@ CREATE TABLE IF NOT EXISTS tarea (
   descripcion_tarea TEXT,
   id_estado UUID,
   id_prioridad UUID,
-  fecha_inicio DATE,
-  fecha_estimada DATE,
-  fecha_fin DATE,
+  fecha_inicio TIMESTAMPTZ,
+  fecha_estimada TIMESTAMPTZ,
+  fecha_fin TIMESTAMPTZ,
   CONSTRAINT fk_tarea_estado
     FOREIGN KEY (id_estado) REFERENCES estado_tarea (id_estado),
   CONSTRAINT fk_tarea_prioridad
@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS evolucion_tarea (
   id_tarea UUID,
   id_estado_tarea UUID,
   descripcion_cambio VARCHAR(255),
-  fecha_inicio DATE NOT NULL,
-  fecha_fin DATE,
+  fecha_inicio TIMESTAMPTZ NOT NULL,
+  fecha_fin TIMESTAMPTZ,
   CONSTRAINT fk_evolucion_empleado
     FOREIGN KEY (id_empleado) REFERENCES empleado (id_empleado),
   CONSTRAINT fk_evolucion_tarea
@@ -112,9 +112,9 @@ CREATE INDEX IF NOT EXISTS idx_evo_id_estado_tarea ON evolucion_tarea (id_estado
 -- =========================
 CREATE TABLE IF NOT EXISTS proyecto (
   id_proyecto UUID PRIMARY KEY,
-  fecha_inicio   DATE NOT NULL,
-  fecha_estimada DATE NOT NULL,
-  fecha_fin      DATE,
+  fecha_inicio   TIMESTAMPTZ NOT NULL,
+  fecha_estimada TIMESTAMPTZ NOT NULL,
+  fecha_fin      TIMESTAMPTZ,
   nombre_proyecto      VARCHAR(80) NOT NULL,
   descripcion_proyecto VARCHAR(80),
   presupuesto_total    NUMERIC(12,2) NOT NULL,
@@ -276,9 +276,9 @@ WITH
     -- Insertar Proyectos
     proyectos_ins AS (
         INSERT INTO proyecto (id_proyecto, fecha_inicio, fecha_estimada, fecha_fin, nombre_proyecto, descripcion_proyecto, presupuesto_total, id_prioridad) VALUES
-        (gen_random_uuid(), CURRENT_DATE - INTERVAL '3 months', CURRENT_DATE + INTERVAL '3 months', NULL, 'Proyecto Alfa', 'Desarrollo de App Móvil', 50000.00, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA')),
-        (gen_random_uuid(), CURRENT_DATE - INTERVAL '1 month', CURRENT_DATE + INTERVAL '1 month', NULL, 'Proyecto Beta', 'Migración de Base de Datos', 25000.50, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA')),
-        (gen_random_uuid(), CURRENT_DATE - INTERVAL '6 months', CURRENT_DATE - INTERVAL '1 month', CURRENT_DATE - INTERVAL '15 days', 'Proyecto Gamma', 'Implementación de ERP', 80000.00, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'BAJA'))
+        (gen_random_uuid(), CURRENT_TIMESTAMP - INTERVAL '3 months', CURRENT_TIMESTAMP + INTERVAL '3 months', NULL, 'Proyecto Alfa', 'Desarrollo de App Móvil', 50000.00, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA')),
+        (gen_random_uuid(), CURRENT_TIMESTAMP - INTERVAL '1 month', CURRENT_TIMESTAMP + INTERVAL '1 month', NULL, 'Proyecto Beta', 'Migración de Base de Datos', 25000.50, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA')),
+        (gen_random_uuid(), CURRENT_TIMESTAMP - INTERVAL '6 months', CURRENT_TIMESTAMP - INTERVAL '1 month', CURRENT_TIMESTAMP - INTERVAL '15 days', 'Proyecto Gamma', 'Implementación de ERP', 80000.00, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'BAJA'))
         RETURNING id_proyecto, nombre_proyecto
     ),
     proyectos_cte AS (SELECT id_proyecto, nombre_proyecto FROM proyectos_ins),
@@ -287,15 +287,15 @@ WITH
     tareas_ins AS (
         INSERT INTO tarea (id_tarea, nombre_tarea, descripcion_tarea, id_estado, id_prioridad, fecha_inicio, fecha_estimada, fecha_fin) VALUES
         -- Tarea para Proyecto Alfa (ALTA)
-        (gen_random_uuid(), 'Diseño UX/UI de la App', 'Definición de la experiencia de usuario y prototipos de la aplicación.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA'), CURRENT_DATE - INTERVAL '15 days', CURRENT_DATE + INTERVAL '5 days', NULL),
-        (gen_random_uuid(), 'Desarrollo del Backend', 'Implementación de servicios y lógica de negocio del proyecto.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA'), NULL, CURRENT_DATE + INTERVAL '30 days', NULL),
+         (gen_random_uuid(), 'Diseño UX/UI de la App', 'Definición de la experiencia de usuario y prototipos de la aplicación.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA'), CURRENT_TIMESTAMP - INTERVAL '15 days', CURRENT_TIMESTAMP + INTERVAL '5 days', NULL),
+        (gen_random_uuid(), 'Desarrollo del Backend', 'Implementación de servicios y lógica de negocio del proyecto.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA'), NULL, CURRENT_TIMESTAMP + INTERVAL '30 days', NULL),
         
         -- Tarea para Proyecto Beta (MEDIA)
-        (gen_random_uuid(), 'Análisis de Requerimientos', 'Documentación de necesidades funcionales y no funcionales del cliente.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA'), CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '25 days', CURRENT_DATE - INTERVAL '25 days'),
-        (gen_random_uuid(), 'Ejecución de Migración', 'Traslado de datos históricos al nuevo sistema con validaciones.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA'), CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE + INTERVAL '1 day', NULL),
+        (gen_random_uuid(), 'Análisis de Requerimientos', 'Documentación de necesidades funcionales y no funcionales del cliente.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA'), CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '25 days', CURRENT_TIMESTAMP - INTERVAL '25 days'),
+        (gen_random_uuid(), 'Ejecución de Migración', 'Traslado de datos históricos al nuevo sistema con validaciones.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA'), CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP + INTERVAL '1 day', NULL),
 
         -- Tarea para Proyecto Gamma (BAJA)
-        (gen_random_uuid(), 'Configuración Inicial ERP', 'Parametrización inicial de módulos y usuarios del ERP.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'BAJA'), CURRENT_DATE - INTERVAL '5 months', CURRENT_DATE - INTERVAL '4 months', CURRENT_DATE - INTERVAL '4 months')
+        (gen_random_uuid(), 'Configuración Inicial ERP', 'Parametrización inicial de módulos y usuarios del ERP.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'BAJA'), CURRENT_TIMESTAMP - INTERVAL '5 months', CURRENT_TIMESTAMP - INTERVAL '4 months', CURRENT_TIMESTAMP - INTERVAL '4 months')
         RETURNING id_tarea, nombre_tarea, descripcion_tarea, id_estado
     ),
     tareas_cte AS (SELECT id_tarea, nombre_tarea, descripcion_tarea, id_estado FROM tareas_ins),
@@ -334,13 +334,13 @@ WITH
     evolucion_tarea_ins AS (
         INSERT INTO evolucion_tarea (id_cambio, id_empleado, id_tarea, id_estado_tarea, descripcion_cambio, fecha_inicio, fecha_fin) VALUES
         -- Tarea: Diseño UX/UI de la App (EN CURSO)
-       (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), 'Creación de la tarea', CURRENT_DATE - INTERVAL '16 days', CURRENT_DATE - INTERVAL '15 days'),
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Tarea iniciada por el equipo de UX', CURRENT_DATE - INTERVAL '15 days', NULL),
+       (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), 'Creación de la tarea', CURRENT_TIMESTAMP - INTERVAL '16 days', CURRENT_TIMESTAMP - INTERVAL '15 days'),
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Tarea iniciada por el equipo de UX', CURRENT_TIMESTAMP - INTERVAL '15 days', NULL),
         -- Tarea: Ejecución de Migración (EN REVISION)
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Inicio de migración de datos', CURRENT_DATE - INTERVAL '12 days', CURRENT_DATE - INTERVAL '10 days'),
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), 'Migración lista para revisión', CURRENT_DATE - INTERVAL '10 days', NULL),
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Inicio de migración de datos', CURRENT_TIMESTAMP - INTERVAL '12 days', CURRENT_TIMESTAMP - INTERVAL '10 days'),
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), 'Migración lista para revisión', CURRENT_TIMESTAMP - INTERVAL '10 days', NULL),
         -- Tarea: Configuración Inicial ERP (COMPLETADA)
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Configuración Inicial ERP'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), 'Configuración finalizada y validada', CURRENT_DATE - INTERVAL '4 months', NULL)
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Configuración Inicial ERP'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), 'Configuración finalizada y validada', CURRENT_TIMESTAMP - INTERVAL '4 months', NULL)
     ),
 
     -- Tarea_Proyecto (Asignación de Empleados y Recursos a Tareas en Proyectos)

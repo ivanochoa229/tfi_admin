@@ -58,6 +58,28 @@ const TASK_STATE_TRANSITIONS: Record<
   }
 };
 
+const parseDateTimeOrNull = (value?: string | null, errorMessage = 'Fecha inválida'): Date | null => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new BadRequestException(errorMessage);
+  }
+
+  return parsed;
+};
+
+const parseRequiredDateTime = (value: string, errorMessage: string): Date => {
+  const parsed = parseDateTimeOrNull(value, errorMessage);
+  if (!parsed) {
+    throw new BadRequestException(errorMessage);
+  }
+
+  return parsed;
+};
+
 @Injectable()
 export class ProjectsService {
   constructor(
@@ -92,9 +114,15 @@ export class ProjectsService {
     const project = this.projectsRepository.create({
       name: dto.name,
       description: dto.description,
-      startDate: dto.startDate,
-      estimatedDate: dto.estimatedDate,
-      endDate: dto.endDate,
+      startDate: parseRequiredDateTime(
+        dto.startDate,
+        'La fecha de inicio del proyecto es inválida.'
+      ),
+      estimatedDate: parseRequiredDateTime(
+        dto.estimatedDate,
+        'La fecha estimada del proyecto es inválida.'
+      ),
+      endDate: parseDateTimeOrNull(dto.endDate, 'La fecha de finalización del proyecto es inválida.'),
       budget: dto.budget.toString(),
       priority
     });
@@ -274,8 +302,11 @@ export class ProjectsService {
       description: dto.description?.trim() || undefined,
       priority,
       state,
-      startDate: dto.startDate,
-      estimatedDate: dto.estimatedDate
+      startDate: parseDateTimeOrNull(dto.startDate, 'La fecha de inicio de la tarea es inválida.'),
+      estimatedDate: parseDateTimeOrNull(
+        dto.estimatedDate,
+        'La fecha estimada de la tarea es inválida.'
+      )
     });
 
     const savedTask = await this.tasksRepository.save(task);
@@ -388,7 +419,7 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
       await this.tasksRepository.save(task);
 
       const manager = await this.employeesRepository.findOne({ where: { id: user.id } });
-      const startDate = new Date().toISOString().slice(0, 10);
+      const startDate = new Date();
 
       await this.closeActiveEvolution(task.id, startDate);
 
@@ -513,16 +544,25 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
     await this.ensureValidStateTransition(task, state, user, hasAssignment);
 
     task.state = state;
-    if (dto.startDate) {
-      task.startDate = dto.startDate;
+     const parsedStartDate = parseDateTimeOrNull(
+      dto.startDate,
+      'La fecha de inicio proporcionada es inválida.'
+    );
+    const parsedEndDate = parseDateTimeOrNull(
+      dto.endDate,
+      'La fecha de finalización proporcionada es inválida.'
+    );
+
+    if (parsedStartDate) {
+      task.startDate = parsedStartDate;
     }
-    if (dto.endDate) {
-      task.endDate = dto.endDate;
+    if (parsedEndDate) {
+      task.endDate = parsedEndDate;
     }
     await this.tasksRepository.save(task);
 
     const employee = await this.employeesRepository.findOne({ where: { id: user.id } });
-    const startDate = dto.startDate ?? new Date().toISOString().slice(0, 10);
+    const startDate = parsedStartDate ?? new Date();
 
     await this.closeActiveEvolution(task.id, startDate);
     const evolution = this.taskEvolutionRepository.create({
@@ -530,7 +570,7 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
       state,
       employee: employee ?? null,
       startDate,
-      endDate: dto.endDate,
+      endDate: parsedEndDate,
       description: dto.description
     });
 
@@ -613,7 +653,7 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
     return this.resourcesRepository.find({ order: { description: 'ASC' } });
   }
 
-  private async closeActiveEvolution(taskId: string, endDate: string) {
+  private async closeActiveEvolution(taskId: string, endDate: Date) {
     const latestEvolution = await this.taskEvolutionRepository.findOne({
       where: { task: { id: taskId }, endDate: IsNull() },
       order: { startDate: 'DESC', id: 'DESC' }

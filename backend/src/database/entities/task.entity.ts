@@ -25,14 +25,14 @@ export class Task {
   @JoinColumn({ name: 'id_prioridad' })
   priority: Priority;
 
-  @Column({ name: 'fecha_inicio', type: 'date', nullable: true })
-  startDate?: string;
+  @Column({ name: 'fecha_inicio', type: 'timestamptz', nullable: true })
+  startDate?: Date | null;
 
-  @Column({ name: 'fecha_estimada', type: 'date', nullable: true })
-  estimatedDate?: string;
+  @Column({ name: 'fecha_estimada', type: 'timestamptz', nullable: true })
+  estimatedDate?: Date | null;
 
-  @Column({ name: 'fecha_fin', type: 'date', nullable: true })
-  endDate?: string;
+  @Column({ name: 'fecha_fin', type: 'timestamptz', nullable: true })
+  endDate?: Date | null;
 
   @OneToMany(() => TaskProject, (taskProject) => taskProject.task)
   projectAssignments: TaskProject[];

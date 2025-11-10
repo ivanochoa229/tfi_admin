@@ -25,6 +25,7 @@ import {
   TaskStatus
 } from '../types/project';
 import { mapPriorityDescription, mapTaskStatusDescription } from '../utils/status';
+import { normalizeDateTimeInput } from '../utils/format';
 import { isManagerRole, mapRoleNameToCollaboratorRole, normalizeRoleName } from '../utils/roles';
 
 export interface CreateProjectPayload {
@@ -579,14 +580,16 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
     async (payload: CreateProjectPayload) => {
       ensureAuthenticated();
       const priorityId = resolvePriorityId(payload.priority);
+      const normalizedStartDate = normalizeDateTimeInput(payload.startDate);
+      const normalizedEstimatedDate = normalizeDateTimeInput(payload.endDate);
 
       const { data } = await apiClient.post<ApiProject>(
         '/projects',
         {
           name: payload.name.trim(),
           description: payload.description.trim(),
-          startDate: payload.startDate,
-          estimatedDate: payload.endDate,
+          startDate: normalizedStartDate,
+          estimatedDate: normalizedEstimatedDate,
           budget: payload.budget,
           priorityId
         },
@@ -603,6 +606,8 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
     async (projectId: string, payload: CreateTaskPayload) => {
       ensureAuthenticated();
       const priorityId = resolvePriorityId(payload.priority);
+      const normalizedStartDate = normalizeDateTimeInput(payload.startDate);
+      const normalizedDueDate = normalizeDateTimeInput(payload.dueDate);
 
       const { data } = await apiClient.post<ApiTask>(
         `/projects/${projectId}/tasks`,
@@ -610,8 +615,8 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
           name: payload.name.trim(),
           description: payload.description?.trim() ? payload.description.trim() : undefined,
           priorityId,
-          startDate: payload.startDate,
-          estimatedDate: payload.dueDate
+          startDate: normalizedStartDate,
+          estimatedDate: normalizedDueDate
         },
         withAuthorization(token)
       );
@@ -623,15 +628,15 @@ export const ProjectManagementProvider = ({ children }: { children: ReactNode })
           id: data.id,
           name: data.name,
           priority: mapPriorityDescription(data.priority),
-          startDate: data.startDate ?? project?.startDate ?? payload.startDate,
-          dueDate: data.estimatedDate ?? payload.dueDate,
+          startDate: data.startDate ?? project?.startDate ?? normalizedStartDate,
+          dueDate: data.estimatedDate ?? normalizedDueDate,
           status: mapTaskStatusDescription(data.state),
           description: data.description ?? payload.description ?? '',
           assigneeIds: [],
           documentation: [],
           resources: [],
           progressNotes: [],
-          createdAt: data.startDate ?? new Date().toISOString()
+          createdAt: data.startDate ?? normalizedStartDate ?? new Date().toISOString()
         }
       );
     },

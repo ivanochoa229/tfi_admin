@@ -20,11 +20,11 @@ export class TaskEvolution {
   @JoinColumn({ name: 'id_estado_tarea' })
   state: TaskState;
 
-  @Column({ name: 'fecha_inicio', type: 'date' })
-  startDate: string;
+  @Column({ name: 'fecha_inicio', type: 'timestamptz' })
+  startDate: Date;
 
-  @Column({ name: 'fecha_fin', type: 'date', nullable: true })
-  endDate?: string;
+  @Column({ name: 'fecha_fin', type: 'timestamptz', nullable: true })
+  endDate?: Date | null;
 
   @Column({ name: 'descripcion_cambio', type: 'varchar', length: 255, nullable: true })
   description?: string;

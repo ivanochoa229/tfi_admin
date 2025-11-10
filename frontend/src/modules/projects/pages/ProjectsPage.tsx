@@ -5,7 +5,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useProjectManagement } from '../../shared/context/ProjectManagementContext';
 import { PriorityLevel } from '../../shared/types/project';
 import { getProjectsVisibleToUser } from '../../shared/utils/access';
-import { formatCurrency, getCollaboratorFullName } from '../../shared/utils/format';
+import { formatCurrency, formatDateTime, getCollaboratorFullName } from '../../shared/utils/format';
 import { isManagerRole } from '../../shared/utils/roles';
 import StatusBadge from '../components/StatusBadge';
 import './ProjectsPage.css';
@@ -107,8 +107,8 @@ const ProjectsPage = () => {
                   <span className="projects-table__budget">de {formatCurrency(project.budget)}</span>
                 </td>
                 <td>
-                  <span>{new Date(project.startDate).toLocaleDateString()}</span>
-                  <span>{new Date(project.endDate).toLocaleDateString()}</span>
+                  <span>{formatDateTime(project.startDate)}</span>
+                  <span>{formatDateTime(project.endDate)}</span>
                 </td>
                 <td>
                   <Link to={`/projects/${project.id}`} className="link">

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { PriorityLevel } from '../../shared/types/project';
 import { useProjectManagement } from '../../shared/context/ProjectManagementContext';
+import { formatCurrency, formatDateTime, normalizeDateTimeInput } from '../../shared/utils/format';
 import './CreateProjectPage.css';
 import useDismissOnInteraction from '../../shared/hooks/useDismissOnInteraction';
 
@@ -65,7 +66,15 @@ const CreateProjectPage = () => {
       return;
     }
 
-    setPendingConfirmation({ ...form, budget: String(parsedBudget) });
+    const normalizedStart = normalizeDateTimeInput(form.startDate);
+    const normalizedEnd = normalizeDateTimeInput(form.endDate);
+
+    setPendingConfirmation({
+      ...form,
+      startDate: normalizedStart,
+      endDate: normalizedEnd,
+      budget: String(parsedBudget)
+    });
   };
 
   const handleConfirmCreation = async () => {
@@ -122,11 +131,25 @@ const CreateProjectPage = () => {
           </label>
           <label>
             Fecha de inicio
-            <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
+            <input
+              type="datetime-local"
+              step={1}
+              name="startDate"
+              value={form.startDate}
+              onChange={handleChange}
+              required
+            />
           </label>
           <label>
             Fecha estimada de finalización
-            <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
+            <input
+              type="datetime-local"
+              step={1}
+              name="endDate"
+              value={form.endDate}
+              onChange={handleChange}
+              required
+            />
           </label>
           <label>
             Presupuesto total (USD)
@@ -182,10 +205,11 @@ const CreateProjectPage = () => {
               <strong>Nombre:</strong> {pendingConfirmation.name}
             </li>
             <li>
-              <strong>Fechas:</strong> {pendingConfirmation.startDate} → {pendingConfirmation.endDate}
+              <strong>Fechas:</strong> {formatDateTime(pendingConfirmation.startDate)} →{' '}
+              {formatDateTime(pendingConfirmation.endDate)}
             </li>
             <li>
-              <strong>Presupuesto:</strong> USD {Number(pendingConfirmation.budget).toLocaleString()}
+              <strong>Presupuesto:</strong> {formatCurrency(Number(pendingConfirmation.budget))}
             </li>
             <li>
               <strong>Prioridad:</strong> {PRIORITY_LABELS[pendingConfirmation.priority]}

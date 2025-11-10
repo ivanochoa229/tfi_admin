@@ -9,6 +9,7 @@ import reportsService, {
   DelayedProjectReportItem,
   OverAssignmentReportItem
 } from '../../shared/services/reportsService';
+import { formatDateTime } from '../../shared/utils/format';
 import { getTaskStatusLabel } from '../../shared/utils/status';
 import './ReportsPage.css';
 
@@ -267,9 +268,7 @@ const ReportsPage = () => {
                             <strong>{conflict.name}</strong>
                             <span>{conflict.project.name}</span>
                             <small>
-                              {new Date(conflict.startDate).toLocaleDateString()} -
-                              {' '}
-                              {new Date(conflict.endDate).toLocaleDateString()}
+                              {formatDateTime(conflict.startDate)} - {formatDateTime(conflict.endDate)}
                             </small>
                           </div>
                         </li>
@@ -303,7 +302,7 @@ const ReportsPage = () => {
               {delayedProjects.map((report) => (
                 <tr key={report.id}>
                   <td>{report.name}</td>
-                  <td>{new Date(report.estimatedDate).toLocaleDateString()}</td>
+                  <td>{formatDateTime(report.estimatedDate)}</td>
                   <td>{report.delayDays}</td>
                   <td>{report.pendingTasks}</td>
                 </tr>
