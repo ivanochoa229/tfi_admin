@@ -382,6 +382,16 @@
   cursor: pointer;
 }
 
+.task-card__pending-docs button.secondary {
+  background: #fff;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+}
+
+.task-card__pending-docs button.secondary:hover {
+  background: #eff6ff;
+}
+
 .task-card__documents input[type='file'] {
   border: 1px dashed #93c5fd;
   padding: 0.75rem;
@@ -395,6 +405,12 @@
   background: #f1f5f9;
   border-radius: 10px;
   padding: 0.75rem 1rem;
+}
+
+.task-card__pending-docs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .task-card__pending-docs ul {

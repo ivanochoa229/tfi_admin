@@ -32,6 +32,7 @@ interface TaskManagementModalProps {
   documentationDraft: File[];
   onSelectDocumentation: (event: ChangeEvent<HTMLInputElement>) => void;
   onConfirmDocumentation: () => void;
+  onClearDocumentation: () => void;
   priorityLabels: Record<PriorityLevel, string>;
   actionFeedback?: string | null;
   actionError?: string | null;
@@ -57,6 +58,7 @@ const TaskManagementModal = ({
   documentationDraft,
   onSelectDocumentation,
   onConfirmDocumentation,
+  onClearDocumentation,
   priorityLabels,
   actionFeedback,
   actionError,
@@ -221,9 +223,14 @@ const TaskManagementModal = ({
                         </li>
                       ))}
                     </ul>
-                    <button type="button" onClick={onConfirmDocumentation}>
-                      Confirmar carga
-                    </button>
+                    <div className="task-card__pending-docs-actions">
+                      <button type="button" className="secondary" onClick={onClearDocumentation}>
+                        Borrar selección
+                      </button>
+                      <button type="button" onClick={onConfirmDocumentation}>
+                        Confirmar carga
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

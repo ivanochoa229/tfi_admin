@@ -387,6 +387,12 @@ const ProjectDetailPage = () => {
     }
   };
 
+    const clearDocumentationSelection = (taskId: string) => {
+    setDocumentationDrafts((prev) => ({ ...prev, [taskId]: [] }));
+    setActionError(null);
+    setActionFeedback(null);
+  };
+
   const confirmDocumentRemoval = async (taskId: string, documentId: string) => {
     try {
       await removeDocumentationFromTask(project.id, taskId, documentId);
@@ -690,6 +696,7 @@ const ProjectDetailPage = () => {
         documentationDraft={documentationDrafts[managedTask.id] ?? []}
         onSelectDocumentation={(event) => handleDocumentationSelection(managedTask.id, event)}
         onConfirmDocumentation={() => confirmDocumentationUpload(managedTask.id)}
+        onClearDocumentation={() => clearDocumentationSelection(managedTask.id)}
         priorityLabels={PRIORITY_LABELS}
         actionFeedback={actionFeedback}
         actionError={actionError}
