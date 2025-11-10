@@ -15,6 +15,7 @@ import { canUserAccessProject, getTasksVisibleToUser } from '../../shared/utils/
 import { isManagerRole } from '../../shared/utils/roles';
 import { formatCurrency, getCollaboratorFullName } from '../../shared/utils/format';
 import StatusBadge from '../components/StatusBadge';
+import TaskEvolutionModal from '../components/TaskEvolutionModal';
 import './ProjectDetailPage.css';
 import useDismissOnInteraction from '../../shared/hooks/useDismissOnInteraction';
 
@@ -78,12 +79,17 @@ const ProjectDetailPage = () => {
   const [documentationDrafts, setDocumentationDrafts] = useState<Record<string, File[]>>({});
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [selectedTaskEvolution, setSelectedTaskEvolution] = useState<Task | null>(null);
 
   const dismissFeedback = useCallback(() => {
     setTaskMessage(null);
     setTaskError(null);
     setActionFeedback(null);
     setActionError(null);
+  }, []);
+
+  const closeEvolutionModal = useCallback(() => {
+    setSelectedTaskEvolution(null);
   }, []);
 
   const hasFeedback = Boolean(taskMessage || taskError || actionFeedback || actionError);
@@ -399,7 +405,8 @@ const ProjectDetailPage = () => {
   };
 
   return (
-    <div className="project-detail">
+    <>
+      <div className="project-detail">
       <header className="project-detail__header">
         <div>
           <h2>{project.name}</h2>
@@ -611,9 +618,14 @@ const ProjectDetailPage = () => {
                 </div>
 
                 <footer className="task-card__actions">
-                  <button type="button" onClick={() => toggleTaskSection(task.id)}>
-                    {isExpanded ? 'Cerrar gestión' : 'Gestionar tarea'}
-                  </button>
+                  <div className="task-card__actions-group">
+                    <button type="button" className="secondary" onClick={() => setSelectedTaskEvolution(task)}>
+                      Ver evolución
+                    </button>
+                    <button type="button" onClick={() => toggleTaskSection(task.id)}>
+                      {isExpanded ? 'Cerrar gestión' : 'Gestionar tarea'}
+                    </button>
+                  </div>
                   {isManager && (
                     <button type="button" className="danger" onClick={() => confirmTaskDeletion(task)}>
                       Eliminar tarea
@@ -731,6 +743,10 @@ const ProjectDetailPage = () => {
         </div>
       </section>
     </div>
+    {selectedTaskEvolution && (
+      <TaskEvolutionModal task={selectedTaskEvolution} onClose={closeEvolutionModal} />
+    )}
+    </>
   );
 };
 

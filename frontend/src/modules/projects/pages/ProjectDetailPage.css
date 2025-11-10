@@ -295,6 +295,14 @@
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.task-card__actions-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .task-card__actions button {
@@ -306,6 +314,12 @@
   background: #1d4ed8;
   color: #fff;
 }
+
+.task-card__actions button.secondary {
+  background: #e2e8f0;
+  color: #1f2937;
+}
+
 
 .task-card__actions button.danger {
   background: #dc2626;

@@ -104,6 +104,7 @@ interface ApiEmployee {
 }
 interface ApiTask {
   id: string;
+  name: string;
   description: string;
   state?: { id: string; description: string } | null;
   priority?: { id: string; description: string } | null;
