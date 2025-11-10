@@ -77,7 +77,7 @@ const ProjectsPage = () => {
               <th>Avance</th>
               <th>Gestor</th>
               <th>Prioridad</th>
-              <th>Presupuesto</th>
+              {isManager && <th>Presupuesto</th>}
               <th>Fechas</th>
               <th>Detalle</th>
             </tr>
@@ -102,10 +102,12 @@ const ProjectsPage = () => {
                 </td>
                 <td>{getCollaboratorFullName(collaborators, project.managerId)}</td>
                 <td>{PRIORITY_LABELS[project.priority]}</td>
-                <td>
-                  <strong>{formatCurrency(project.usedBudget)}</strong>
-                  <span className="projects-table__budget">de {formatCurrency(project.budget)}</span>
-                </td>
+                {isManager && (
+                  <td>
+                    <strong>{formatCurrency(project.usedBudget)}</strong>
+                    <span className="projects-table__budget">de {formatCurrency(project.budget)}</span>
+                  </td>
+                )}
                 <td>
                   <span>{formatDateTime(project.startDate)}</span>
                   <span>{formatDateTime(project.endDate)}</span>

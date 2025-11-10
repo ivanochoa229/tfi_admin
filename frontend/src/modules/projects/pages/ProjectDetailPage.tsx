@@ -440,12 +440,14 @@ const ProjectDetailPage = () => {
             <span>Prioridad</span>
             <strong>{PRIORITY_LABELS[project.priority]}</strong>
           </div>
-          <div>
-            <span>Presupuesto utilizado</span>
-            <strong>
-              {formatCurrency(project.usedBudget)} / {formatCurrency(project.budget)}
-            </strong>
-          </div>
+          {isManager && (
+            <div>
+              <span>Presupuesto utilizado</span>
+              <strong>
+                {formatCurrency(project.usedBudget)} / {formatCurrency(project.budget)}
+              </strong>
+            </div>
+          )}
         </div>
       </section>
 

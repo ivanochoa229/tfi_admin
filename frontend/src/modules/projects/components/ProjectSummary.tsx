@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 import { useProjectManagement } from '../../shared/context/ProjectManagementContext';
 import { Project } from '../../shared/types/project';
 import { formatCurrency, getCollaboratorFullName } from '../../shared/utils/format';
+import { useAuth } from '../../auth/AuthContext';
+import { isManagerRole } from '../../shared/utils/roles';
 import StatusBadge from './StatusBadge';
 import './ProjectSummary.css';
 
@@ -14,10 +16,12 @@ interface ProjectSummaryProps {
 
 const ProjectSummary = ({ project }: ProjectSummaryProps) => {
   const { collaborators } = useProjectManagement();
+  const { user } = useAuth();
   const managerName = useMemo(
     () => getCollaboratorFullName(collaborators, project.managerId),
     [collaborators, project.managerId]
   );
+  const isManager = isManagerRole(user?.roleName);
 
   return (
     <article className="project-summary">
@@ -33,12 +37,14 @@ const ProjectSummary = ({ project }: ProjectSummaryProps) => {
         </div>
         <span className="project-summary__progress-value">{project.progress}%</span>
       </div>
-      <div className="project-summary__budget">
-        <span>Presupuesto utilizado</span>
-        <strong>
-          {formatCurrency(project.usedBudget)} / {formatCurrency(project.budget)}
-        </strong>
-      </div>
+      {isManager && (
+        <div className="project-summary__budget">
+          <span>Presupuesto utilizado</span>
+          <strong>
+            {formatCurrency(project.usedBudget)} / {formatCurrency(project.budget)}
+          </strong>
+        </div>
+      )}
       <footer>
         <div>
           <strong>Gestor:</strong> {managerName}
