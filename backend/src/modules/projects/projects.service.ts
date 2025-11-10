@@ -5,7 +5,7 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, FindOptionsRelations, FindOptionsWhere } from 'typeorm';
+import { Repository, In, FindOptionsRelations, FindOptionsWhere, IsNull } from 'typeorm';
 import { Project } from '../../database/entities/project.entity';
 import { Priority } from '../../database/entities/priority.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -378,11 +378,15 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
       await this.tasksRepository.save(task);
 
       const manager = await this.employeesRepository.findOne({ where: { id: user.id } });
+      const startDate = new Date().toISOString().slice(0, 10);
+
+      await this.closeActiveEvolution(task.id, startDate);
+
       const evolution = this.taskEvolutionRepository.create({
         task,
         state: pendingState,
         employee: manager ?? null,
-        startDate: new Date().toISOString().slice(0, 10),
+        startDate,
         description: 'Asignación de colaboradores'
       });
 
@@ -508,11 +512,14 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
     await this.tasksRepository.save(task);
 
     const employee = await this.employeesRepository.findOne({ where: { id: user.id } });
+    const startDate = dto.startDate ?? new Date().toISOString().slice(0, 10);
+
+    await this.closeActiveEvolution(task.id, startDate);
     const evolution = this.taskEvolutionRepository.create({
       task,
       state,
       employee: employee ?? null,
-      startDate: dto.startDate ?? new Date().toISOString().slice(0, 10),
+      startDate,
       endDate: dto.endDate,
       description: dto.description
     });
@@ -594,5 +601,19 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
   }
   async getResources() {
     return this.resourcesRepository.find({ order: { description: 'ASC' } });
+  }
+
+  private async closeActiveEvolution(taskId: string, endDate: string) {
+    const latestEvolution = await this.taskEvolutionRepository.findOne({
+      where: { task: { id: taskId }, endDate: IsNull() },
+      order: { startDate: 'DESC', id: 'DESC' }
+    });
+
+    if (!latestEvolution) {
+      return;
+    }
+
+    latestEvolution.endDate = endDate;
+    await this.taskEvolutionRepository.save(latestEvolution);
   }
 }
