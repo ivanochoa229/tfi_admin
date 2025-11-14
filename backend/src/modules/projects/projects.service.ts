@@ -479,8 +479,35 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
       throw new NotFoundException('La tarea no pertenece al proyecto indicado');
     }
 
-    await this.taskProjectResourceRepository.delete({ task: { id: taskId } });
-    await this.taskProjectRepository.delete({ task: { id: taskId } });
+    const resourceAllocations = await this.taskProjectResourceRepository.find({
+      select: { id: true },
+      where: { task: { id: taskId } },
+      loadEagerRelations: false
+    });
+    const resourceAllocationIds = resourceAllocations.map((allocation) => allocation.id);
+    if (resourceAllocationIds.length > 0) {
+      await this.taskProjectResourceRepository.delete(resourceAllocationIds);
+    }
+
+    const taskAssignments = await this.taskProjectRepository.find({
+      select: { id: true },
+      where: { task: { id: taskId } },
+      loadEagerRelations: false
+    });
+    const taskAssignmentIds = taskAssignments.map((assignment) => assignment.id);
+    if (taskAssignmentIds.length > 0) {
+      await this.taskProjectRepository.delete(taskAssignmentIds);
+    }
+
+    const taskEvolutions = await this.taskEvolutionRepository.find({
+      select: { id: true },
+      where: { task: { id: taskId } },
+      loadEagerRelations: false
+    });
+    const taskEvolutionIds = taskEvolutions.map((evolution) => evolution.id);
+    if (taskEvolutionIds.length > 0) {
+      await this.taskEvolutionRepository.delete(taskEvolutionIds);
+    }
     await this.tasksRepository.delete({ id: taskId });
 
     return { success: true };
