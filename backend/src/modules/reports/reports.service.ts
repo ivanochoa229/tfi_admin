@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TaskProject } from '../../database/entities/task-project.entity';
 import { Project } from '../../database/entities/project.entity';
+import { TaskProjectResource } from 'src/database/entities/task-project-resource.entity';
 
 @Injectable()
 export class ReportsService {
@@ -10,7 +11,9 @@ export class ReportsService {
     @InjectRepository(TaskProject)
     private readonly taskProjectRepository: Repository<TaskProject>,
     @InjectRepository(Project)
-    private readonly projectsRepository: Repository<Project>
+    private readonly projectsRepository: Repository<Project>,
+    @InjectRepository(TaskProjectResource)
+    private readonly taskProjectResourceRepository: Repository<TaskProjectResource>
   ) {}
 
   async getCollaboratorsWithMultipleTasks() {
@@ -261,6 +264,87 @@ export class ReportsService {
       project: { id: project.id, name: project.name },
       totalTasks,
       states: result
+    };
+  }
+
+  async getProjectExpenseTimeline(projectId: string) {
+    const project = await this.projectsRepository.findOne({ where: { id: projectId } });
+    if (!project) {
+      throw new NotFoundException('Proyecto no encontrado');
+    }
+    if (!project.endDate) {
+      throw new BadRequestException(
+        'Solo es posible generar la trazabilidad de gastos para proyectos finalizados.'
+      );
+    }
+
+    const allocations = await this.taskProjectResourceRepository.find({
+      where: { project: { id: projectId } },
+      relations: ['task', 'resource']
+    });
+
+    type TaskExpense = {
+      taskId: string;
+      taskName: string;
+      endDate: Date;
+      cost: number;
+    };
+
+    const expensesByTask = new Map<string, TaskExpense>();
+
+    allocations.forEach((allocation) => {
+      const task = allocation.task;
+      const resource = allocation.resource;
+      if (!task?.endDate || !resource) {
+        return;
+      }
+
+      const unitCost = Number(resource.unitCost ?? 0);
+      if (Number.isNaN(unitCost)) {
+        return;
+      }
+
+      const cost = unitCost * allocation.quantity;
+      if (!Number.isFinite(cost)) {
+        return;
+      }
+
+      const existing = expensesByTask.get(task.id);
+      if (existing) {
+        existing.cost += cost;
+      } else {
+        expensesByTask.set(task.id, {
+          taskId: task.id,
+          taskName: task.name,
+          endDate: new Date(task.endDate),
+          cost
+        });
+      }
+    });
+
+    let cumulative = 0;
+    const timeline = Array.from(expensesByTask.values())
+      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime())
+      .map((entry) => {
+        cumulative += entry.cost;
+        return {
+          taskId: entry.taskId,
+          taskName: entry.taskName,
+          endDate: entry.endDate.toISOString(),
+          incrementalCost: Number(entry.cost.toFixed(2)),
+          cumulativeCost: Number(cumulative.toFixed(2))
+        };
+      });
+
+    return {
+      project: {
+        id: project.id,
+        name: project.name,
+        startDate: project.startDate.toISOString(),
+        endDate: project.endDate?.toISOString() ?? null
+      },
+      totalExpenses: Number(cumulative.toFixed(2)),
+      timeline
     };
   }
 }

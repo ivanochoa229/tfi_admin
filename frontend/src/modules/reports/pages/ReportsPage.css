@@ -31,6 +31,17 @@
   gap: 1rem;
 }
 
+.reports__section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reports__section-header p {
+  margin: 0;
+  color: #5f6368;
+}
+
 .reports__section table {
   width: 100%;
   border-collapse: collapse;
@@ -156,6 +167,45 @@
 
 .reports__progress-fill.status--completed {
   background: #22c55e;
+}
+
+.reports__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.reports__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.reports__field select {
+  min-width: 240px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+  background: #f8fafc;
+  font-size: 1rem;
+}
+
+.reports__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+.reports__summary span {
+  font-size: 1.1rem;
+  color: #111827;
 }
 
 @media (max-width: 640px) {

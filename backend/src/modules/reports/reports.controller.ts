@@ -29,4 +29,9 @@ export class ReportsController {
   getProjectProgress(@Param('projectId') projectId: string) {
     return this.reportsService.getProjectProgress(projectId);
   }
+
+  @Get('projects/:projectId/expenses/timeline')
+  getProjectExpenseTimeline(@Param('projectId') projectId: string) {
+    return this.reportsService.getProjectExpenseTimeline(projectId);
+  }
 }

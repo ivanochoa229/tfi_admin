@@ -29,6 +29,19 @@ interface ApiDelayedProjectReport {
   pendingTasks: number;
 }
 
+interface ApiProjectExpenseTimelinePoint {
+  taskId: string;
+  taskName: string;
+  endDate: string;
+  incrementalCost: number;
+  cumulativeCost: number;
+}
+
+interface ApiProjectExpenseTimeline {
+  project: { id: string; name: string; startDate: string; endDate: string | null };
+  totalExpenses: number;
+  timeline: ApiProjectExpenseTimelinePoint[];
+}
 
 export interface OverAssignmentReportItem {
   collaborator: {
@@ -56,6 +69,19 @@ export interface DelayedProjectReportItem {
   pendingTasks: number;
 }
 
+export interface ProjectExpenseTimelinePoint {
+  taskId: string;
+  taskName: string;
+  endDate: string;
+  incrementalCost: number;
+  cumulativeCost: number;
+}
+
+export interface ProjectExpenseTimeline {
+  project: { id: string; name: string; startDate: string; endDate: string | null };
+  totalExpenses: number;
+  timeline: ProjectExpenseTimelinePoint[];
+}
 
 const mapOverAssignmentReport = (item: ApiOverAssignmentReport): OverAssignmentReportItem => ({
   collaborator: {
@@ -92,7 +118,22 @@ const reportsService = {
       withAuthorization(token)
     );
     return data;
+    },
+  async getProjectExpenseTimeline(
+    token: string,
+    projectId: string
+  ): Promise<ProjectExpenseTimeline> {
+    const { data } = await apiClient.get<ApiProjectExpenseTimeline>(
+      `/reports/projects/${projectId}/expenses/timeline`,
+      withAuthorization(token)
+    );
+    return {
+      project: data.project,
+      totalExpenses: data.totalExpenses,
+      timeline: data.timeline
+    };
   }
 };
+
 
 export default reportsService;

@@ -3,10 +3,11 @@ import { isAxiosError } from 'axios';
 
 import { useAuth } from '../../auth/AuthContext';
 import { useProjectManagement } from '../../shared/context/ProjectManagementContext';
-import { TaskStatus } from '../../shared/types/project';
+import { ProjectStatus, TaskStatus } from '../../shared/types/project';
 import reportsService, {
   DelayedProjectReportItem,
-  OverAssignmentReportItem
+  OverAssignmentReportItem,
+  ProjectExpenseTimeline
 } from '../../shared/services/reportsService';
 import { formatDateTime } from '../../shared/utils/format';
 import { getTaskStatusLabel } from '../../shared/utils/status';
@@ -31,6 +32,12 @@ const extractReportErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
+const currencyFormatter = new Intl.NumberFormat('es-AR', {
+  style: 'currency',
+  currency: 'ARS',
+  minimumFractionDigits: 2
+});
+
 const ReportsPage = () => {
   const { token } = useAuth();
   const { projects, isLoading, error } = useProjectManagement();
@@ -38,6 +45,10 @@ const ReportsPage = () => {
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [overAssignmentReports, setOverAssignmentReports] = useState<OverAssignmentReportItem[]>([]);
   const [delayedProjects, setDelayedProjects] = useState<DelayedProjectReportItem[]>([]);
+  const [selectedFinishedProjectId, setSelectedFinishedProjectId] = useState('');
+  const [expenseTimeline, setExpenseTimeline] = useState<ProjectExpenseTimeline | null>(null);
+  const [expenseTimelineError, setExpenseTimelineError] = useState<string | null>(null);
+  const [expenseTimelineLoading, setExpenseTimelineLoading] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -110,6 +121,66 @@ const ReportsPage = () => {
     };
   }, [token, projects]);
 
+  const completedProjects = useMemo(
+    () => projects.filter((project) => project.status === ProjectStatus.Completed),
+    [projects]
+  );
+
+  useEffect(() => {
+    if (!selectedFinishedProjectId && completedProjects.length > 0) {
+      setSelectedFinishedProjectId(completedProjects[0].id);
+      return;
+    }
+
+    if (completedProjects.length === 0 && selectedFinishedProjectId) {
+      setSelectedFinishedProjectId('');
+      setExpenseTimeline(null);
+      setExpenseTimelineError(null);
+    }
+  }, [completedProjects, selectedFinishedProjectId]);
+
+  useEffect(() => {
+    if (!token || !selectedFinishedProjectId) {
+      setExpenseTimeline(null);
+      setExpenseTimelineError(null);
+      setExpenseTimelineLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    const loadTimeline = async () => {
+      setExpenseTimelineLoading(true);
+      setExpenseTimelineError(null);
+      try {
+        const data = await reportsService.getProjectExpenseTimeline(token, selectedFinishedProjectId);
+        if (!isMounted) {
+          return;
+        }
+        setExpenseTimeline(data);
+      } catch (timelineError) {
+        if (!isMounted) {
+          return;
+        }
+        setExpenseTimeline(null);
+        setExpenseTimelineError(
+          extractReportErrorMessage(
+            timelineError,
+            'No fue posible generar la trazabilidad de gastos para el proyecto seleccionado.'
+          )
+        );
+      } finally {
+        if (isMounted) {
+          setExpenseTimelineLoading(false);
+        }
+      }
+    };
+
+    loadTimeline();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedFinishedProjectId, token]);
 
   const taskStatusByProject = useMemo(() => {
     return projects.map((project) => {
@@ -280,6 +351,75 @@ const ReportsPage = () => {
             </article>
           ))}
         </div>
+      </section>
+      <section className="reports__section">
+        <div className="reports__section-header">
+          <h3>Trazabilidad de gastos por proyecto</h3>
+          <p>Analiza cómo se acumularon los gastos a medida que las tareas finalizadas fueron cerrándose.</p>
+        </div>
+
+        {completedProjects.length === 0 ? (
+          <p className="reports__empty">
+            Para consultar la trazabilidad de gastos es necesario contar con al menos un proyecto finalizado.
+          </p>
+        ) : (
+          <>
+            <div className="reports__filters">
+              <label className="reports__field">
+                <span>Proyecto finalizado</span>
+                <select
+                  value={selectedFinishedProjectId}
+                  onChange={(event) => setSelectedFinishedProjectId(event.target.value)}
+                >
+                  {completedProjects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {expenseTimeline && (
+                <div className="reports__summary">
+                  <strong>Total invertido:</strong>
+                  <span>{currencyFormatter.format(expenseTimeline.totalExpenses)}</span>
+                </div>
+              )}
+            </div>
+
+            {expenseTimelineError && <div className="reports__alert">{expenseTimelineError}</div>}
+
+            {expenseTimelineLoading ? (
+              <p className="reports__empty">Calculando la trazabilidad de gastos...</p>
+            ) : expenseTimeline && expenseTimeline.timeline.length > 0 ? (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarea</th>
+                    <th>Fecha de finalización</th>
+                    <th>Gasto incremental</th>
+                    <th>Gasto acumulado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expenseTimeline.timeline.map((item) => (
+                    <tr key={`${item.taskId}-${item.endDate}`}>
+                      <td>
+                        <strong>{item.taskName}</strong>
+                      </td>
+                      <td>{formatDateTime(item.endDate)}</td>
+                      <td>{currencyFormatter.format(item.incrementalCost)}</td>
+                      <td>{currencyFormatter.format(item.cumulativeCost)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="reports__empty">
+                No se registraron gastos asociados a las tareas finalizadas de este proyecto.
+              </p>
+            )}
+          </>
+        )}
       </section>
     </div>
   );
