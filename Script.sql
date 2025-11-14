@@ -257,51 +257,60 @@ prioridad_data AS (
 SELECT 'Tablas de catálogo pobladas' AS status;
 
 -- 2. Definición de UUIDs para las entidades principales (Empleados, Proyectos, Tareas, Recursos)
-WITH 
+WITH
     -- Obtener IDs de catálogo
     prioridades AS (SELECT id_prioridad, descripcion_prioridad FROM prioridad),
     estados AS (SELECT id_estado, descripcion_estado FROM estado_tarea),
 
-    -- Insertar Empleados
+    -- Insertar Empleados (Añadiendo a Pedro (Gestor) y Elena (Colaboradora))
     empleados_ins AS (
         INSERT INTO empleado (id_empleado, nombre_empleado, apellido_empleado, password, correo_electronico , telefono ,id_rol) VALUES
-        (gen_random_uuid(), 'Ana', 'García', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'anagarcia@mail.com', '3813245789',(SELECT id_rol FROM rol WHERE nombre_rol = 'GESTOR')),         -- Gestor
-        (gen_random_uuid(), 'Luis', 'Martínez', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'luismartinez@mail.com', '3817845789',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')), -- Colaborador
-        (gen_random_uuid(), 'Sofía', 'Rodríguez', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'sofiarodriguez@mail.com', '3813245320',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')), -- Colaborador
-        (gen_random_uuid(), 'David', 'Sánchez', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'davidsanchez@mail.com', '3815005789',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR'))   -- Colaborador
+        (gen_random_uuid(), 'Ana', 'García', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'anagarcia@mail.com', '3813245789',(SELECT id_rol FROM rol WHERE nombre_rol = 'GESTOR')),         -- Gestor 1
+        (gen_random_uuid(), 'Luis', 'Martínez', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'luismartinez@mail.com', '3817845789',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')), -- Colaborador 1
+        (gen_random_uuid(), 'Sofía', 'Rodríguez', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'sofiarodriguez@mail.com', '3813245320',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')), -- Colaborador 2
+        (gen_random_uuid(), 'David', 'Sánchez', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'davidsanchez@mail.com', '3815005789',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR')),  -- Colaborador 3
+        (gen_random_uuid(), 'Pedro', 'López', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'pedrolopez@mail.com', '3815551234',(SELECT id_rol FROM rol WHERE nombre_rol = 'GESTOR')),          -- Gestor 2 (NUEVO)
+        (gen_random_uuid(), 'Elena', 'Gil', '$2a$12$OnzFCD4yob.ZBifzd/bUTu0otwQHODPUcTT8OswqIaJ3xqHBUCvAO', 'elenagil@mail.com', '3815555678',(SELECT id_rol FROM rol WHERE nombre_rol = 'COLABORADOR'))           -- Colaborador 4 (NUEVO)
         RETURNING id_empleado, nombre_empleado, id_rol
     ),
     empleados_cte AS (SELECT id_empleado, nombre_empleado, id_rol FROM empleados_ins),
 
-    -- Insertar Proyectos
+    -- Insertar Proyectos (Añadiendo Proyecto Delta)
     proyectos_ins AS (
         INSERT INTO proyecto (id_proyecto, fecha_inicio, fecha_estimada, fecha_fin, nombre_proyecto, descripcion_proyecto, presupuesto_total, id_prioridad) VALUES
         (gen_random_uuid(), CURRENT_TIMESTAMP - INTERVAL '3 months', CURRENT_TIMESTAMP + INTERVAL '3 months', NULL, 'Proyecto Alfa', 'Desarrollo de App Móvil', 50000.00, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA')),
         (gen_random_uuid(), CURRENT_TIMESTAMP - INTERVAL '1 month', CURRENT_TIMESTAMP + INTERVAL '1 month', NULL, 'Proyecto Beta', 'Migración de Base de Datos', 25000.50, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA')),
-        (gen_random_uuid(), CURRENT_TIMESTAMP - INTERVAL '6 months', CURRENT_TIMESTAMP - INTERVAL '1 month', CURRENT_TIMESTAMP - INTERVAL '15 days', 'Proyecto Gamma', 'Implementación de ERP', 80000.00, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'BAJA'))
+        (gen_random_uuid(), CURRENT_TIMESTAMP - INTERVAL '6 months', CURRENT_TIMESTAMP - INTERVAL '1 month', CURRENT_TIMESTAMP - INTERVAL '15 days', 'Proyecto Gamma', 'Implementación de ERP', 80000.00, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'BAJA')),
+        (gen_random_uuid(), CURRENT_TIMESTAMP + INTERVAL '5 days', CURRENT_TIMESTAMP + INTERVAL '2 months', NULL, 'Proyecto Delta', 'Campaña de Marketing Digital', 15000.00, (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA')) -- NUEVO
         RETURNING id_proyecto, nombre_proyecto
     ),
     proyectos_cte AS (SELECT id_proyecto, nombre_proyecto FROM proyectos_ins),
 
-    -- Insertar Tareas
+    -- Insertar Tareas (Añadiendo 3 tareas más)
     tareas_ins AS (
         INSERT INTO tarea (id_tarea, nombre_tarea, descripcion_tarea, id_estado, id_prioridad, fecha_inicio, fecha_estimada, fecha_fin) VALUES
         -- Tarea para Proyecto Alfa (ALTA)
          (gen_random_uuid(), 'Diseño UX/UI de la App', 'Definición de la experiencia de usuario y prototipos de la aplicación.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA'), CURRENT_TIMESTAMP - INTERVAL '15 days', CURRENT_TIMESTAMP + INTERVAL '5 days', NULL),
-        (gen_random_uuid(), 'Desarrollo del Backend', 'Implementación de servicios y lógica de negocio del proyecto.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA'), NULL, CURRENT_TIMESTAMP + INTERVAL '30 days', NULL),
-        
+         (gen_random_uuid(), 'Desarrollo del Backend', 'Implementación de servicios y lógica de negocio del proyecto.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA'), NULL, CURRENT_TIMESTAMP + INTERVAL '30 days', NULL),
+         (gen_random_uuid(), 'Pruebas de Integración App', 'Ejecución de pruebas funcionales y de integración.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'ALTA'), CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP, NULL), -- NUEVA TAREA ALFA (EN REVISIÓN)
+
         -- Tarea para Proyecto Beta (MEDIA)
         (gen_random_uuid(), 'Análisis de Requerimientos', 'Documentación de necesidades funcionales y no funcionales del cliente.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA'), CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '25 days', CURRENT_TIMESTAMP - INTERVAL '25 days'),
         (gen_random_uuid(), 'Ejecución de Migración', 'Traslado de datos históricos al nuevo sistema con validaciones.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA'), CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP + INTERVAL '1 day', NULL),
+        (gen_random_uuid(), 'Documentación Post-Migración', 'Elaboración de manuales y procedimientos de uso de la DB.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'MEDIA'), NULL, CURRENT_TIMESTAMP + INTERVAL '15 days', NULL), -- NUEVA TAREA BETA (CREADA)
 
         -- Tarea para Proyecto Gamma (BAJA)
-        (gen_random_uuid(), 'Configuración Inicial ERP', 'Parametrización inicial de módulos y usuarios del ERP.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'BAJA'), CURRENT_TIMESTAMP - INTERVAL '5 months', CURRENT_TIMESTAMP - INTERVAL '4 months', CURRENT_TIMESTAMP - INTERVAL '4 months')
+        (gen_random_uuid(), 'Configuración Inicial ERP', 'Parametrización inicial de módulos y usuarios del ERP.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), (SELECT id_prioridad FROM prioridades WHERE descripcion_prioridad = 'BAJA'), CURRENT_TIMESTAMP - INTERVAL '5 months', CURRENT_TIMESTAMP - INTERVAL '4 months', CURRENT_TIMESTAMP - INTERVAL '4 months'),
+
+        -- Tarea para Proyecto Delta (MEDIA)
+        (gen_random_uuid(), 'Creación de Contenido para Redes', 'Diseño de piezas gráficas y copys para redes sociales.', (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), (SELECT id_priorIDAD FROM prioridades WHERE descripcion_prioridad = 'MEDIA'), CURRENT_TIMESTAMP + INTERVAL '5 days', CURRENT_TIMESTAMP + INTERVAL '15 days', NULL) -- NUEVA TAREA DELTA (EN CURSO)
+
         RETURNING id_tarea, nombre_tarea, descripcion_tarea, id_estado
     ),
     tareas_cte AS (SELECT id_tarea, nombre_tarea, descripcion_tarea, id_estado FROM tareas_ins),
 
 
-    -- Insertar Recursos
+    -- Insertar Recursos (Sin cambios, solo CTE)
     recursos_ins AS (
         INSERT INTO recurso (id_recurso, descripcion_recurso, costo_unitario) VALUES
         (gen_random_uuid(), 'Licencia Software A', 1500.00),
@@ -321,50 +330,83 @@ WITH
 
     -- 3. Inserciones de Tablas de Relación y Evolución
 
-    -- Asignar Empleados a Proyectos (Proyecto_Empleado)
+    -- Asignar Empleados a Proyectos (Proyecto_Empleado) - GESTORES CON 2 PROYECTOS C/U
     proyecto_empleado_ins AS (
         INSERT INTO proyecto_empleado (id_empleado, id_proyecto) VALUES
+        -- GESTOR ANA (Alfa y Gamma)
         ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Ana'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa')),
+        ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Ana'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Gamma')),
+        -- GESTOR PEDRO (Beta y Delta)
+        ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Pedro'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Beta')),
+        ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Pedro'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Delta')),
+
+        -- Colaboradores asignados a sus proyectos principales
         ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa')),
         ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Beta')),
-        ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Gamma'))
+        ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Gamma')),
+        ((SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Elena'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Delta'))
     ),
 
-    -- Evolución de Tareas (Evolucion_Tarea)
+    -- Evolución de Tareas (Evolucion_Tarea) - Añadiendo evoluciones
     evolucion_tarea_ins AS (
         INSERT INTO evolucion_tarea (id_cambio, id_empleado, id_tarea, id_estado_tarea, descripcion_cambio, fecha_inicio, fecha_fin) VALUES
         -- Tarea: Diseño UX/UI de la App (EN CURSO)
-       (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), 'Creación de la tarea', CURRENT_TIMESTAMP - INTERVAL '16 days', CURRENT_TIMESTAMP - INTERVAL '15 days'),
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'CREADA'), 'Creación de la tarea', CURRENT_TIMESTAMP - INTERVAL '16 days', CURRENT_TIMESTAMP - INTERVAL '15 days'),
         (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Tarea iniciada por el equipo de UX', CURRENT_TIMESTAMP - INTERVAL '15 days', NULL),
+        -- Tarea: Pruebas de Integración App (EN REVISION)
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Pruebas de Integración App'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), 'Pruebas finalizadas, esperando aprobación.', CURRENT_TIMESTAMP - INTERVAL '5 days', NULL),
         -- Tarea: Ejecución de Migración (EN REVISION)
         (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Inicio de migración de datos', CURRENT_TIMESTAMP - INTERVAL '12 days', CURRENT_TIMESTAMP - INTERVAL '10 days'),
         (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN REVISION'), 'Migración lista para revisión', CURRENT_TIMESTAMP - INTERVAL '10 days', NULL),
         -- Tarea: Configuración Inicial ERP (COMPLETADA)
-        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Configuración Inicial ERP'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), 'Configuración finalizada y validada', CURRENT_TIMESTAMP - INTERVAL '4 months', NULL)
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Configuración Inicial ERP'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'COMPLETADA'), 'Configuración finalizada y validada', CURRENT_TIMESTAMP - INTERVAL '4 months', NULL),
+        -- Tarea: Creación de Contenido para Redes (EN CURSO)
+        (gen_random_uuid(), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Elena'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Creación de Contenido para Redes'), (SELECT id_estado FROM estados WHERE descripcion_estado = 'EN CURSO'), 'Iniciada fase de diseño y redacción.', CURRENT_TIMESTAMP + INTERVAL '5 days', NULL)
     ),
 
-    -- Tarea_Proyecto (Asignación de Empleados y Recursos a Tareas en Proyectos)
+    -- Tarea_Proyecto (Asignación de Empleados y Recursos a Tareas en Proyectos) - SOBREASIGNACIÓN INTENCIONAL
     tarea_proyecto_ins AS (
         INSERT INTO tarea_proyecto (id_tarea_proyecto, id_proyecto, id_tarea, id_empleado, id_recurso) VALUES
-        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Licencia Software A')),
+        -- PROYECTO ALFA
+        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Licencia Suite Diseño')),
         (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Desarrollo del Backend'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Ana'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Servidor Cloud')),
-        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Beta'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Servidor Cloud'))
+        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Pruebas de Integración App'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Licencia Herramienta CI/CD')),
+
+        -- PROYECTO BETA
+        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Beta'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Suscripción Base de Datos SQL')),
+        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Beta'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Documentación Post-Migración'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'David'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Material de Oficina')),
+
+        -- PROYECTO DELTA
+        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Delta'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Creación de Contenido para Redes'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Elena'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Material de Marketing Digital')),
+
+        --- SOBREASIGNACIÓN INTENCIONAL: Tarea de Alfa y Tarea de Beta a David.
+        --- Tarea de Alfa: Pruebas de Integración App (Fecha Estimada: Hoy) -> Luis
+        --- Tarea de Beta: Documentación Post-Migración (Fecha Estimada: +15 días) -> David
+        --- David ya tiene una tarea completada, asignemos las nuevas al colaborador más disponible, Sofía y Elena.
+        --- SOBREASIGNACIÓN: Asignar a SOFÍA dos tareas con períodos de tiempo superpuestos.
+        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Licencia Software A')), -- Tarea 1: Fecha Inicio: -15 días, Fecha Estimada: +5 días.
+        (gen_random_uuid(), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Delta'), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Creación de Contenido para Redes'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Material de Marketing Digital')) -- Tarea 2: Fecha Inicio: +5 días, Fecha Estimada: +15 días.
+        -- Ambas tareas se superponen en el período de +5 días a +15 días.
     ),
 
-    -- Tarea_Proyecto_Recurso (Recursos con Cantidades)
+    -- Tarea_Proyecto_Recurso (Recursos con Cantidades) - Añadiendo recursos
     tpr_ins AS (
         INSERT INTO tarea_proyecto_recurso (id_tarea_proyecto_recurso, id_tarea, id_recurso, id_proyecto, cantidad) VALUES
-         (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Licencia Software A'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), 1),
+          (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Licencia Software A'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), 1),
         (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Desarrollo del Backend'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Servidor Cloud'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), 3),
+        (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Pruebas de Integración App'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Licencia Herramienta CI/CD'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Alfa'), 1),
+        (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Ejecución de Migración'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Suscripción Base de Datos SQL'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Beta'), 1),
+        (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Creación de Contenido para Redes'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Material de Marketing Digital'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Delta'), 20),
         (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Configuración Inicial ERP'), (SELECT id_recurso FROM recursos_cte WHERE descripcion_recurso = 'Material de Oficina'), (SELECT id_proyecto FROM proyectos_cte WHERE nombre_proyecto = 'Proyecto Gamma'), 50)
     ),
 
-    -- Documento (Usando un contenido BYTEA de ejemplo)
+    -- Documento (Usando un contenido BYTEA de ejemplo) - Añadiendo un documento
     documento_ins AS (
         INSERT INTO documento (id_documento, id_tarea, nombre_archivo, mime_type, extension, tamanio_bytes, contenido, checksum_md5, subido_por) VALUES
         (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Diseño UX/UI de la App'), 'Especificacion_UX.pdf', 'application/pdf', 'pdf', 512000, decode('486F6C61206D756E646F2E', 'hex'), md5('Especificaciones UX'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Ana')),
-        (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Análisis de Requerimientos'), 'Requisitos_v1.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx', 102400, decode('4172636869766F206465207072756562612E', 'hex'), md5('Requisitos v1'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía'))
+        (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Análisis de Requerimientos'), 'Requisitos_v1.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx', 102400, decode('4172636869766F206465207072756562612E', 'hex'), md5('Requisitos v1'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Sofía')),
+        (gen_random_uuid(), (SELECT id_tarea FROM tareas_cte WHERE nombre_tarea = 'Pruebas de Integración App'), 'Reporte_Pruebas.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx', 25600, decode('4461746F7320646520707275656261732E', 'hex'), md5('Reporte Pruebas'), (SELECT id_empleado FROM empleados_cte WHERE nombre_empleado = 'Luis'))
     )
 
-SELECT 'Datos de empleados, proyectos, tareas y relaciones poblados' AS status;
+SELECT 'Datos de empleados (2 gestores, 4 colaboradores), 4 proyectos, 8 tareas y relaciones (incluida sobreasignación intencional) poblados' AS status;
 
