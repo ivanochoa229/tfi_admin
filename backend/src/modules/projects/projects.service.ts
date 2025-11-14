@@ -582,6 +582,7 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
     if (!state) {
       throw new NotFoundException('Estado de tarea inválido');
     }
+    const normalizedTargetState = normalizeStateName(state.description);
 
     const hasAssignment = await this.ensureAssignmentForUpdate(taskId, user);
     await this.ensureValidStateTransition(task, state, user, hasAssignment);
@@ -618,6 +619,10 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
     });
 
     await this.taskEvolutionRepository.save(evolution);
+
+    if (normalizedTargetState === 'COMPLETADA') {
+      await this.updateProjectCompletionStatus(projectId, parsedEndDate ?? new Date());
+    }
 
     return this.tasksRepository.findOne({
       where: { id: taskId },
@@ -694,6 +699,40 @@ const assignmentsWithCollaborators = [...existingAssignments, ...newAssignments]
   }
   async getResources() {
     return this.resourcesRepository.find({ order: { description: 'ASC' } });
+  }
+
+  private async updateProjectCompletionStatus(projectId: string, completionDate: Date) {
+    const assignments = await this.taskProjectRepository.find({
+      where: { project: { id: projectId } },
+      relations: ['task', 'task.state']
+    });
+
+    const tasksMap = assignments.reduce<Map<string, Task>>((map, assignment) => {
+      if (assignment.task) {
+        map.set(assignment.task.id, assignment.task);
+      }
+      return map;
+    }, new Map<string, Task>());
+
+    if (tasksMap.size === 0) {
+      return;
+    }
+
+    const allTasksCompleted = Array.from(tasksMap.values()).every((projectTask) =>
+      normalizeStateName(projectTask.state?.description ?? '') === 'COMPLETADA'
+    );
+
+    if (!allTasksCompleted) {
+      return;
+    }
+
+    const project = await this.projectsRepository.findOne({ where: { id: projectId } });
+    if (!project || project.endDate) {
+      return;
+    }
+
+    project.endDate = completionDate ?? new Date();
+    await this.projectsRepository.save(project);
   }
 
   private async closeActiveEvolution(taskId: string, endDate: Date) {
