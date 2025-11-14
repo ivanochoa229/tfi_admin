@@ -738,6 +738,7 @@ const ProjectDetailPage = () => {
                   const isCompleted = task.status === TaskStatus.Completed;
                   const shouldShowManagementToggle = !isCompleted || isManaged;
                   const canDeleteTask = isManager && !isCompleted;
+                  const canRemoveResources = isManager && !isCompleted;
 
                   return (
                     <tr key={task.id}>
@@ -788,7 +789,7 @@ const ProjectDetailPage = () => {
                                 </div>
                                 <div className="task-table__resource-actions">
                                   <span>{formatCurrency(resource.cost)}</span>
-                                  {isManager && (
+                                  {canRemoveResources && (
                                     <button
                                       type="button"
                                       onClick={() => confirmResourceRemoval(task.id, resource.id)}
@@ -813,14 +814,16 @@ const ProjectDetailPage = () => {
                                   <strong>{document.name}</strong>
                                   <span>{new Date(document.uploadedAt).toLocaleString()}</span>
                                 </div>
-                                <div className="task-table__document-actions">
-                                  <button
-                                    type="button"
-                                    onClick={() => confirmDocumentRemoval(task.id, document.id)}
-                                  >
-                                    Eliminar
-                                  </button>
-                                </div>
+                                {!isCompleted && (
+                                  <div className="task-table__document-actions">
+                                    <button
+                                      type="button"
+                                      onClick={() => confirmDocumentRemoval(task.id, document.id)}
+                                    >
+                                      Eliminar
+                                    </button>
+                                  </div>
+                                )}
                               </li>
                             ))}
                           </ul>
