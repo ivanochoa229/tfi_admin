@@ -114,6 +114,23 @@ const ProjectDetailPage = () => {
     setManagedTask(null);
   }, []);
 
+  useEffect(() => {
+    if (!project || !managedTask) {
+      return;
+    }
+
+    const updatedTask = project.tasks.find((task) => task.id === managedTask.id);
+
+    if (!updatedTask) {
+      setManagedTask(null);
+      return;
+    }
+
+    if (updatedTask !== managedTask) {
+      setManagedTask(updatedTask);
+    }
+  }, [project, managedTask]);
+  
   const hasFeedback = Boolean(taskMessage || taskError || actionFeedback || actionError);
   useDismissOnInteraction(hasFeedback, dismissFeedback);
 
