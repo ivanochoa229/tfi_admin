@@ -735,6 +735,9 @@ const ProjectDetailPage = () => {
               <tbody>
                 {sortedTasks.map((task) => {
                   const isManaged = managedTask?.id === task.id;
+                  const isCompleted = task.status === TaskStatus.Completed;
+                  const shouldShowManagementToggle = !isCompleted || isManaged;
+                  const canDeleteTask = isManager && !isCompleted;
 
                   return (
                     <tr key={task.id}>
@@ -828,13 +831,15 @@ const ProjectDetailPage = () => {
                           <button type="button" className="secondary" onClick={() => setSelectedTaskEvolution(task)}>
                             Ver evolución
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => (isManaged ? closeTaskManagement() : openTaskManagement(task))}
-                          >
-                            {isManaged ? 'Cerrar gestión' : 'Gestionar tarea'}
-                          </button>
-                        {isManager && (
+                          {shouldShowManagementToggle && (
+                            <button
+                              type="button"
+                              onClick={() => (isManaged ? closeTaskManagement() : openTaskManagement(task))}
+                            >
+                              {isManaged ? 'Cerrar gestión' : 'Gestionar tarea'}
+                            </button>
+                          )}
+                          {canDeleteTask && (
                             <button type="button" className="danger" onClick={() => confirmTaskDeletion(task)}>
                               Eliminar tarea
                             </button>
