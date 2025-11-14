@@ -24,7 +24,6 @@ const DEFAULT_STATE: FormState = {
   role: 'Colaborador'
 };
 
-const ROLE_OPTIONS: CollaboratorRole[] = ['Colaborador'];
 const SUMMARY_ROLES: CollaboratorRole[] = ['Gestor de proyecto', 'Colaborador'];
 
 const RegisterUserPage = () => {
@@ -124,29 +123,18 @@ const RegisterUserPage = () => {
           </label>
         </div>
         <label>
-          Contraseña temporal
+          Contraseña 
           <input
             type="password"
             name="password"
             value={form.password}
             onChange={handleChange}
             required
-            minLength={6}
-            placeholder="Mínimo 6 caracteres"
+            minLength={8}
+            placeholder="Mínimo 8 caracteres"
           />
-          <span className="register-user__hint">Comparte esta contraseña con el colaborador y pídele que la actualice en su primer ingreso.</span>
         </label>
-        <label>
-          Rol del usuario
-          <select name="role" value={form.role} onChange={handleChange} required disabled>
-            {ROLE_OPTIONS.map((role) => (
-              <option key={role} value={role}>
-                {role}
-              </option>
-            ))}
-          </select>
-          <span className="register-user__hint">Los gestores solo pueden crear cuentas de colaboradores.</span>
-        </label>
+        <p className="register-user__hint">Los gestores solo pueden crear cuentas de colaboradores.</p>
         <div className="register-user__actions">
           <button type="submit" disabled={isSubmitting}>
             Validar datos
